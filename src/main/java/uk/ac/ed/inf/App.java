@@ -1,13 +1,15 @@
 package uk.ac.ed.inf;
 
-/**
- * Hello world!
- *
- */
-public class App 
+import uk.ac.ed.inf.ilp.constant.OrderStatus;
+
+public class App
 {
     public static void main( String[] args )
     {
-        System.out.println( "Hello World!" );
+        System.out.println("Test for ILPDataObjects");
+
+        OrderStatus OrderStatus = uk.ac.ed.inf.ilp.constant.OrderStatus.DELIVERED;
+
+        System.out.println("ILPDataObjects used");
     }
 }
