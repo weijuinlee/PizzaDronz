@@ -6,10 +6,10 @@ public class App
 {
     public static void main( String[] args )
     {
-        System.out.println("Test for ILPDataObjects");
+        System.out.println("Small test for IlpDataObjects!");
 
-        OrderStatus OrderStatus = uk.ac.ed.inf.ilp.constant.OrderStatus.DELIVERED;
+        var orderStatus = OrderStatus.DELIVERED;
 
-        System.out.println("ILPDataObjects used");
+        System.out.println("IlpDataObjects.jar used");
     }
 }
