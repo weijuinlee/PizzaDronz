@@ -19,7 +19,7 @@ public class OrderValidatorTest {
 
         order.setCreditCardInformation(
                 new CreditCardInformation(
-                        "5167679223795831",
+                        "1212",
                         String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(1, 12), ThreadLocalRandom.current().nextInt(24, 29)),
                         "222"
                 )
