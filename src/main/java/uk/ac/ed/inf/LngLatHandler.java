@@ -1,13 +1,10 @@
 package uk.ac.ed.inf;
 
-import uk.ac.ed.inf.ilp.interfaces.LngLatHandling;
 import uk.ac.ed.inf.ilp.constant.SystemConstants;
+import uk.ac.ed.inf.ilp.interfaces.LngLatHandling;
 import uk.ac.ed.inf.ilp.data.LngLat;
 import uk.ac.ed.inf.ilp.data.NamedRegion;
-
-import java.awt.*;
-
-import static uk.ac.ed.inf.ilp.constant.SystemConstants.DRONE_MOVE_DISTANCE;
+import static uk.ac.ed.inf.ilp.constant.SystemConstants.*;
 
 /**
  * implement the needed computations for a LngLat
@@ -73,21 +70,57 @@ public class LngLatHandler implements LngLatHandling {
     }
 
     /**
-     * find the next position if an @angle is applied to a @startPosition
+     * find the next position if an angle is applied to a startPosition
      * @param startPosition is where the start is
      * @param angle is the angle to use in degrees
      * @return the new position after the angle is used if the angle is valid
      */
     public LngLat nextPosition(LngLat startPosition, double angle) {
 
-        if (angle >= MIN_ANGLE && angle < MAX_ANGLE) {
+        if ((angle >= MIN_ANGLE && angle < MAX_ANGLE) || (angle == HOVER)){
 
-            //calculate the location after moving 0.00015 degree in the direction of the input degree
-            double newLng = startPosition.lng() + (DRONE_MOVE_DISTANCE * Math.cos(Math.toRadians(angle)));
-            double newLat = startPosition.lat() + (DRONE_MOVE_DISTANCE * Math.sin(Math.toRadians(angle)));
-            return new LngLat(newLng, newLat);
+            switch (String.valueOf(angle)) {
+                case "0.0":
+                    return (new LngLat(startPosition.lng() + DRONE_MOVE_DISTANCE, startPosition.lat()));
+                case "22.5":
+                    return (new LngLat(startPosition.lng() + DRONE_MOVE_DISTANCE * Math.cos(Math.PI / 8), startPosition.lat() + DRONE_MOVE_DISTANCE * Math.sin(Math.PI / 8)));
+                case "45.0":
+                    return (new LngLat(startPosition.lng() + DRONE_MOVE_DISTANCE * Math.cos(Math.PI / 4), startPosition.lat() + DRONE_MOVE_DISTANCE * Math.sin(Math.PI / 4)));
+                case "67.5":
+                    return (new LngLat(startPosition.lng() + DRONE_MOVE_DISTANCE * Math.sin(Math.PI / 8), startPosition.lat() + DRONE_MOVE_DISTANCE * Math.cos(Math.PI / 8)));
+                case "90.0":
+                    return (new LngLat(startPosition.lng(), startPosition.lat() + DRONE_MOVE_DISTANCE));
+                case "112.5":
+                    return (new LngLat(startPosition.lng() - DRONE_MOVE_DISTANCE * Math.sin(Math.PI / 8), startPosition.lat() + DRONE_MOVE_DISTANCE * Math.cos(Math.PI / 8)));
+                case "135.0":
+                    return (new LngLat(startPosition.lng() - DRONE_MOVE_DISTANCE * Math.cos(Math.PI / 4), startPosition.lat() + DRONE_MOVE_DISTANCE * Math.sin(Math.PI / 4)));
+                case "157.5":
+                    return (new LngLat(startPosition.lng() - DRONE_MOVE_DISTANCE * Math.cos(Math.PI / 8), startPosition.lat() + DRONE_MOVE_DISTANCE * Math.sin(Math.PI / 8)));
+                case "180.0":
+                    return (new LngLat(startPosition.lng() - DRONE_MOVE_DISTANCE, startPosition.lat()));
+                case "202.5":
+                    return (new LngLat(startPosition.lng() - DRONE_MOVE_DISTANCE * Math.cos(Math.PI / 8), startPosition.lat() - DRONE_MOVE_DISTANCE * Math.sin(Math.PI / 8)));
+                case "225.0":
+                    return (new LngLat(startPosition.lng() - DRONE_MOVE_DISTANCE * Math.cos(Math.PI / 4), startPosition.lat() - DRONE_MOVE_DISTANCE * Math.sin(Math.PI / 4)));
+                case "247.5":
+                    return (new LngLat(startPosition.lng() - DRONE_MOVE_DISTANCE * Math.sin(Math.PI / 8), startPosition.lat() - DRONE_MOVE_DISTANCE * Math.cos(Math.PI / 8)));
+                case "270.0":
+                    return (new LngLat(startPosition.lng(), startPosition.lat() - DRONE_MOVE_DISTANCE));
+                case "292.5":
+                    return (new LngLat(startPosition.lng() + DRONE_MOVE_DISTANCE * Math.sin(Math.PI / 8), startPosition.lat() - DRONE_MOVE_DISTANCE * Math.cos(Math.PI / 8)));
+                case "315.0":
+                    return (new LngLat(startPosition.lng() + DRONE_MOVE_DISTANCE * Math.cos(Math.PI / 4), startPosition.lat() - DRONE_MOVE_DISTANCE * Math.sin(Math.PI / 4)));
+                case "337.5":
+                    return (new LngLat(startPosition.lng() + DRONE_MOVE_DISTANCE * Math.cos(Math.PI / 8), startPosition.lat() - DRONE_MOVE_DISTANCE * Math.sin(Math.PI / 8)));
+                case "999.0":
+                    return (startPosition);
+                default:
+                    System.err.println("Angle within range but not one of 16 directions");
+                    return (startPosition);
+            }
         } else {
-            return startPosition;
+            System.err.println("Angle is not within range");
+            return (startPosition);
         }
     }
 }
