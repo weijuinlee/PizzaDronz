@@ -1,5 +1,6 @@
 package uk.ac.ed.inf;
 
+import org.junit.Test;
 import uk.ac.ed.inf.ilp.constant.OrderStatus;
 import uk.ac.ed.inf.ilp.constant.OrderValidationCode;
 import uk.ac.ed.inf.ilp.constant.SystemConstants;
@@ -9,7 +10,10 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static org.junit.Assert.assertTrue;
+
 public class OrderValidatorTest {
+
     public static void main(String[] args) {
         System.out.println("ILP Test Application using the IlpDataObjects.jar file");
 
@@ -51,5 +55,6 @@ public class OrderValidatorTest {
         } else {
             System.out.println("no order validated");
         }
+
     }
 }

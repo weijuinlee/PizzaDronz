@@ -42,31 +42,47 @@ public class LngLatHandler implements LngLatHandling {
     }
 
     /**
-     * check if the @position is in the @region (includes the border)
-     *
+     * @param x,y         The coordinate of the point to check
+     * @param x1,y1,x2,y2 The coordinates of the two points making the edge
+     * @return True if the right vertical line that passes through x,y meet the edge.
+     */
+    private boolean passEdge(double x, double y, double x1, double y1, double x2, double y2) {
+        double boty = Math.min(y1, y2);
+        double topy = Math.max(y1, y2);
+        if (y <= boty || y >= topy) {
+            return false;
+        }
+        if (x2 == x1) {
+            return x1 > x;
+        }
+        double a = (y2 - y1) / (x2 - x1);
+        double b = y1 - a * x1;
+        double p = (y - b) / a;
+        return p > x;
+    }
+
+    /**
+     * check if the position is in the region that includes the border
+     * using Basic Ray tracing algorithm to see if the point is in the polygon
      * @param position to check
-     * @param region   as a closed polygon
-     * @return if the position is inside the region (including the border)
+     * @param region as a closed polygon
+     * @return if the position is inside the region that includes the border
      */
     public boolean isInRegion(LngLat position, NamedRegion region) {
-        int intersectCount = 0;
 
-//        for (int i = 0; i < region.vertices().length; i++) {
-//            Point vertA = region.vertices[i];
-//            Point vertB = polygon.get((i + 1) % region.size()); // Connect the last vertex with the first
-//
-//            if (rayCastIntersect(x, y, vertA, vertB)) {
-//                intersectCount++;
-//            }
-//
-//            // Check if the point lies on the edge
-//            if (isPointOnEdge(x, y, vertA, vertB)) {
-//                return true;
-//            }
-//        }
-
-        return intersectCount % 2 == 1;
-
+        var corners = region.vertices();
+        int n = corners.length;
+        if (n >= 3) {
+            int edge_passes = 0;
+            for (int i = 0; i < n; i++) {
+                if (passEdge(position.lng(), position.lat(), corners[i].lng(), corners[i].lat(),
+                        corners[(i + 1) % n].lng(), corners[(i + 1) % n].lat())) {
+                    edge_passes++;
+                }
+            }
+            return edge_passes % 2 == 1;
+        }
+        return false;
     }
 
     /**
