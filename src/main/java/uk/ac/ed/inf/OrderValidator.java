@@ -6,9 +6,11 @@ import uk.ac.ed.inf.ilp.data.Restaurant;
 import uk.ac.ed.inf.ilp.interfaces.OrderValidation;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Set;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.*;
+import java.util.regex.*;
 
 import static uk.ac.ed.inf.ilp.constant.OrderStatus.*;
 import static uk.ac.ed.inf.ilp.constant.OrderValidationCode.*;
@@ -16,93 +18,98 @@ import static uk.ac.ed.inf.ilp.constant.SystemConstants.*;
 
 public class OrderValidator implements OrderValidation {
 
+    /**
+     * Checks if order is valid
+     * @author B209981
+     * @param orderToValidate Order from REST
+     * @param definedRestaurants List of restaurant details
+     * Return true if all pizza ordered are available in at least one restaurant
+     */
     @Override
     public Order validateOrder(Order orderToValidate, Restaurant[] definedRestaurants) {
 
-        HashMap<String, Integer> pizzaPrices = getPizzaPrices(definedRestaurants);
-        HashMap<String, Integer> orderPizzaDetails = getOrderPizzaDetails(orderToValidate);
+        // Extract pizzas ordered into list
+        List<String> pizzaOrders = Arrays.stream(orderToValidate.getPizzasInOrder()).map(Pizza::name).collect(Collectors.toList());
 
-        if (isPizzaNameValid(orderToValidate, orderPizzaDetails, pizzaPrices)){
-            if (isUnderMaxCount(orderToValidate)) {
-                if (isTotalValid(orderToValidate, orderPizzaDetails, pizzaPrices)){
-                    if (isCreditCardValid(orderToValidate)) {
-                        isPizzaFromOneRestaurant(orderPizzaDetails, definedRestaurants);
-                        orderToValidate.setOrderValidationCode(NO_ERROR);
-                        orderToValidate.setOrderStatus(VALID_BUT_NOT_DELIVERED);
-                    }
-                }
+        // Extract pairs of name and price of pizzas for quick search
+        HashMap<String, Integer> pizzaPrices = getPizzaPrices(definedRestaurants);
+
+        if (orderToValidate.getPizzasInOrder().length > 0 && definedRestaurants.length > 0){
+            if (!isUnderMaxCount(orderToValidate)){
+                orderToValidate.setOrderValidationCode(MAX_PIZZA_COUNT_EXCEEDED);
+                orderToValidate.setOrderStatus(INVALID);
+            } else if (!isCVVValid(orderToValidate.getCreditCardInformation().getCvv())) {
+                orderToValidate.setOrderValidationCode(CVV_INVALID);
+                orderToValidate.setOrderStatus(INVALID);
+            } else if (isExpiryDateValid(orderToValidate.getCreditCardInformation().getCreditCardExpiry())) {
+                orderToValidate.setOrderValidationCode(EXPIRY_DATE_INVALID);
+                orderToValidate.setOrderStatus(INVALID);
+            } else if (!isCardNumberValid(orderToValidate.getCreditCardInformation().getCreditCardNumber())) {
+                orderToValidate.setOrderValidationCode(CARD_NUMBER_INVALID);
+                orderToValidate.setOrderStatus(INVALID);
+            } else if (!isPizzaNameValid(pizzaOrders, pizzaPrices)){
+                orderToValidate.setOrderValidationCode(PIZZA_NOT_DEFINED);
+                orderToValidate.setOrderStatus(INVALID);
+            } else if (!isTotalValid(orderToValidate, pizzaOrders, pizzaPrices)){
+                orderToValidate.setOrderValidationCode(TOTAL_INCORRECT);
+                orderToValidate.setOrderStatus(INVALID);
+            } else if (!isPizzaFromOneRestaurant(pizzaOrders, definedRestaurants)){
+                orderToValidate.setOrderValidationCode(PIZZA_FROM_MULTIPLE_RESTAURANTS);
+                orderToValidate.setOrderStatus(INVALID);
+            } else if (!isRestaurantOpen(pizzaOrders, definedRestaurants)){
+                orderToValidate.setOrderValidationCode(RESTAURANT_CLOSED);
+                orderToValidate.setOrderStatus(INVALID);
+            } else {
+                isRestaurantOpen(pizzaOrders, definedRestaurants);
+                orderToValidate.setOrderStatus(VALID_BUT_NOT_DELIVERED);
+                orderToValidate.setOrderValidationCode(NO_ERROR);
             }
         }
-
         return orderToValidate;
     }
 
     /**
-     * Checks if pizza name exist in pizzaPrices
-     * @param orderToValidate Order to be checked,  HashMap<String, Integer> orderedPizzaPrices, HashMap<String, Integer> pizzaPrices to be checked against
-     * Sets TOTAL_INCORRECT if false
+     * Checks if pizza name exist in menus
+     * @param orderedPizzas List of pizza ordered
+     * @param pizzaPrices Pairs of pizza and price
+     * Return true if all pizza ordered are available in at least one restaurant
      */
-    private static boolean isPizzaNameValid(Order orderToValidate, HashMap<String, Integer> orderedPizzaPrices, HashMap<String, Integer> pizzaPrices) {
+    private static boolean isPizzaNameValid(List orderedPizzas, HashMap<String, Integer> pizzaPrices) {
 
-        Set<String> orderedPizzaNames = orderedPizzaPrices.keySet();
-        Set<String> pizzaNames = pizzaPrices.keySet();
+        Set<String> uniqueOrderedPizzas = (Set<String>) orderedPizzas.stream().collect(Collectors.toSet());
+        Set<Integer> uniquePizzaNames = new HashSet(pizzaPrices.keySet());
 
-        // Check if orderedPizzaNames is a subset of pizzaNames
-        if (pizzaNames.containsAll(orderedPizzaNames)) {
-            return true;
-        } else {
-            orderToValidate.setOrderValidationCode(PIZZA_NOT_DEFINED);
-            return false;
-        }
+        //Check if all pizza ordered are available
+        return uniquePizzaNames.containsAll(uniqueOrderedPizzas);
     }
 
     /**
      * Checks if total is valid
-     * @param orderToValidate Order to be checked,  HashMap<String, Integer> pizzaPrices pizzaPrice to be checked against
-     * Sets TOTAL_INCORRECT if false
+     * @param orderToValidate Order get total cost input
+     * @param orderedPizzas List of pizza ordered
+     * @param pizzaPrices Pairs of pizza and price
+     * Return true if total cost is correct
      */
-    private static boolean isTotalValid(Order orderToValidate, HashMap<String, Integer> orderedPizzaPrices, HashMap<String, Integer> pizzaPrices) {
-
-        Set<String> orderedPizzaNames = orderedPizzaPrices.keySet();
+    private static boolean isTotalValid(Order orderToValidate, List orderedPizzas, HashMap<String, Integer> pizzaPrices) {
 
         //set sum as 100 due to delivery charge
         int sum = ORDER_CHARGE_IN_PENCE;
 
         //get the total amount plus delivery charge
-        for (String orderedPizzaName : orderedPizzaNames) {
-            if (pizzaPrices.containsKey(orderedPizzaName)) {
-                sum += pizzaPrices.get(orderedPizzaName);
+        for (Object pizza : orderedPizzas) {
+            if (pizzaPrices.containsKey(pizza)) {
+                sum += pizzaPrices.get(pizza);
             }
         }
 
         //Check if the total amount plus delivery charge matches the total amount provided
-        if (sum != orderToValidate.getPriceTotalInPence()){
-            orderToValidate.setOrderValidationCode(TOTAL_INCORRECT);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Obtain pairs of pizza name and price from order
-     * @param orderToValidate order to be checked.
-     * @return a HashMap of pizza name and price pairs from order.
-     */
-    private HashMap<String, Integer> getOrderPizzaDetails (Order orderToValidate) {
-
-        HashMap<String,Integer> orderedPizzaPrices = new HashMap<>();
-
-        // Obtain a hashmap of pizza name and price pairs from order
-        for (Pizza pizza : orderToValidate.getPizzasInOrder()) {
-            orderedPizzaPrices.put(pizza.name(), pizza.priceInPence());
-        }
-        return orderedPizzaPrices;
+        return sum == orderToValidate.getPriceTotalInPence();
     }
 
     /**
      * Obtain pairs of pizza name and price from all restaurants
-     * @param definedRestaurants Restaurants to be checked.
-     * @return a HashMap of pizza name and price pairs.
+     * @param definedRestaurants Restaurants to be checked
+     * Return HashMap of pizza name and price pairs
      */
     private HashMap<String, Integer> getPizzaPrices(Restaurant[] definedRestaurants) {
 
@@ -115,61 +122,82 @@ public class OrderValidator implements OrderValidation {
                 pizzaPrices.put(pizza.name(),pizza.priceInPence());
             }
         }
-
         return pizzaPrices;
     }
 
     /**
-     * Checks if pizza are from one restaurant
-     * @param orderPizzaDetails pizza ordered
-     * @param definedRestaurants menu to be checked against
-     * Sets MAX_PIZZA_COUNT_EXCEEDED if false
+     * Obtain a set of opened days
+     * @param definedRestaurants Restaurants to be checked
+     * Return HashSet of days
      */
-    private static boolean isPizzaFromOneRestaurant(HashMap<String, Integer> orderPizzaDetails, Restaurant[] definedRestaurants) {
-//        orderPizzaDetails
-        // Check if the order has less than 4 pizzas
-//        if (orderToValidate.getPizzasInOrder().length > 4) {
-//            orderToValidate.setOrderValidationCode(MAX_PIZZA_COUNT_EXCEEDED);
-//            return false;
-//        }
-        return true;
+    private HashSet<String> getOpenedDays(Restaurant[] definedRestaurants) {
+
+        HashSet<String> openedDays = new HashSet<>();
+
+        for (Restaurant definedRestaurant : definedRestaurants) {
+            DayOfWeek[] openedDaysList = definedRestaurant.openingDays();
+            for ( DayOfWeek openingDays : openedDaysList) {
+                openedDays.add(openingDays.name());
+            }
+        }
+        return openedDays;
     }
 
+    /**
+     * Checks if pizza are from one restaurant
+     * @param pizzaOrders List of pizza ordered
+     * @param definedRestaurants menu to be checked against
+     * Return true if orders are all fulfilled by only one restaurant
+     */
+    private static boolean isPizzaFromOneRestaurant(List pizzaOrders, Restaurant[] definedRestaurants) {
+
+        boolean isValid = false;
+        for (Restaurant definedRestaurant : definedRestaurants){
+            ArrayList<String> pizzasOnMenu = Arrays.stream(definedRestaurant.menu()).map(Pizza::name).collect(Collectors.toCollection(ArrayList::new));
+            if (pizzasOnMenu.containsAll(pizzaOrders)) {
+                isValid = true;
+            }
+        }
+        return isValid;
+    }
 
     /**
-     * Checks if the order has less than 4 pizzas
-     * @param orderToValidate Order to be checked.
-     * Sets MAX_PIZZA_COUNT_EXCEEDED if false
+     * Checks if pizza are from one restaurant
+     * @param pizzaOrders List of pizza ordered
+     * @param definedRestaurants menu to be checked against
+     * Return true if orders are fulfil/ed by a single restaurant when open
+     */
+    private static boolean isRestaurantOpen(List pizzaOrders, Restaurant[] definedRestaurants) {
+
+        boolean isValid = false;
+        for (Restaurant definedRestaurant : definedRestaurants){
+            ArrayList<String> pizzasOnMenu = Arrays.stream(definedRestaurant.menu()).map(Pizza::name).collect(Collectors.toCollection(ArrayList::new));
+            if (pizzasOnMenu.containsAll(pizzaOrders)) {
+                ArrayList<String> openedDays = Arrays.stream(definedRestaurant.openingDays()).map(DayOfWeek::name).collect(Collectors.toCollection(ArrayList::new));
+
+                //Get the current date
+                LocalDate currentDate = LocalDate.now();
+
+                // Get the current day of the week
+                DayOfWeek currentDay = currentDate.getDayOfWeek();
+
+                if (openedDays.contains(currentDay.name())){
+                    isValid = true;
+                }
+            }
+        }
+        return isValid;
+    }
+
+    /**
+     * Checks if the order has less than 5 pizzas
+     * @param orderToValidate Order to be checked
+     * Returns true if less than 5 pizza
      */
     private static boolean isUnderMaxCount(Order orderToValidate) {
 
-        // Check if the order has less than 4 pizzas
-        if (orderToValidate.getPizzasInOrder().length > MAX_PIZZAS_PER_ORDER) {
-            orderToValidate.setOrderValidationCode(MAX_PIZZA_COUNT_EXCEEDED);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Checks if credit card is valid
-     * @param orderToValidate Order to be checked.
-     * Sets validation code according to checks
-     */
-    private static boolean isCreditCardValid(Order orderToValidate) {
-
-        if (isCardNumberValid(orderToValidate.getCreditCardInformation().getCreditCardNumber())) {
-            orderToValidate.setOrderValidationCode(CARD_NUMBER_INVALID);
-            return false;
-        } else if (isCVVValid(orderToValidate.getCreditCardInformation().getCvv())) {
-            orderToValidate.setOrderValidationCode(CVV_INVALID);
-            return false;
-        } else if (isExpiryDateValid(orderToValidate.getCreditCardInformation().getCreditCardExpiry())) {
-            orderToValidate.setOrderValidationCode(EXPIRY_DATE_INVALID);
-            return false;
-        } else {
-            return true;
-        }
+        // Check if the order has less than 5 pizzas
+        return orderToValidate.getPizzasInOrder().length <= MAX_PIZZAS_PER_ORDER;
     }
 
     /**
@@ -206,15 +234,16 @@ public class OrderValidator implements OrderValidation {
      */
     private static boolean isCVVValid(String CVV) {
 
+        boolean isValid = false;
+
         // Check if the cvv is numeric
         if (isNumeric(CVV)) {
 
             // Check if the number has exactly 3 digits
-            return CVV.length() != 3;
-        } else {
-            return true;
+            String regex = "^[0-9]{3}$";
+            isValid =  Pattern.matches(regex, CVV);
         }
-
+        return isValid;
     }
 
     /**
@@ -224,19 +253,15 @@ public class OrderValidator implements OrderValidation {
      */
     private static boolean isCardNumberValid(String creditCardNumber) {
 
-        // Check if the number is numeric
-        if (isNumeric(creditCardNumber)) {
-
-            // Check if the number has exactly 16 digits
-            if (creditCardNumber.length() == 16) {
-                // Check if the cleaned number is a valid credit card number using the Luhn algorithm
-                return !isValidLuhn(creditCardNumber);
-            } else {
-                return true;
-            }
-        } else {
-            return true;
+        boolean isValid = false;
+        if (isNumeric(creditCardNumber)
+                && isValidLuhn(creditCardNumber)
+                && creditCardNumber.length() == 16) {
+            String regex = "^(?:(?<visa>4[0-9]{3})|"
+                    + "(?<mastercard>(222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720|5[1-5][0-9]{2})))";
+            isValid = Pattern.matches(regex, creditCardNumber.substring(0,4));
         }
+        return isValid;
     }
 
     /**

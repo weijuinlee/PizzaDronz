@@ -23,7 +23,7 @@ public class OrderValidatorTest {
 
         order.setCreditCardInformation(
                 new CreditCardInformation(
-                        "1212",
+                        "5167679223795831",
                         String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(1, 12), ThreadLocalRandom.current().nextInt(24, 29)),
                         "222"
                 )
@@ -36,15 +36,28 @@ public class OrderValidatorTest {
         // get a random restaurant
 
         // and load the order items plus the price
-        order.setPizzasInOrder(new Pizza[]{new Pizza("A", 1212)});
-        order.setPriceTotalInPence(1212 + SystemConstants.ORDER_CHARGE_IN_PENCE);
+        order.setPizzasInOrder(new Pizza[]{new Pizza("K", 1212),new Pizza("D", 1212),new Pizza("D", 1212),new Pizza("D", 1212)});
+
+        order.setPriceTotalInPence(4848 + SystemConstants.ORDER_CHARGE_IN_PENCE);
 
         var validatedOrder =
                 new OrderValidator().validateOrder(order,
                         new Restaurant[]{new Restaurant("myRestaurant",
                                 new LngLat(55.945535152517735, -3.1912869215011597),
                                 new DayOfWeek[]{DayOfWeek.MONDAY, DayOfWeek.FRIDAY},
-                                new Pizza[]{new Pizza("Pizza A", 2300)})
+                                new Pizza[]{new Pizza("A", 1212)}),
+                        new Restaurant("otherRestaurant",
+                                new LngLat(55.945535152517735, -3.1912869215011597),
+                                new DayOfWeek[]{DayOfWeek.MONDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY},
+                                new Pizza[]{
+                                        new Pizza("K", 1212),
+                                        new Pizza("D", 1212)}),
+                        new Restaurant("otherRestaurant",
+                                new LngLat(55.945535152517735, -3.1912869215011597),
+                                new DayOfWeek[]{DayOfWeek.MONDAY, DayOfWeek.FRIDAY},
+                                new Pizza[]{
+                                        new Pizza("T", 1212),
+                                        new Pizza("E", 1212)})
                         });
 
         if (validatedOrder != null){

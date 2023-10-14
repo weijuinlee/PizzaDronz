@@ -7,7 +7,7 @@ import uk.ac.ed.inf.ilp.data.NamedRegion;
 import static uk.ac.ed.inf.ilp.constant.SystemConstants.*;
 
 /**
- * implement the needed computations for a LngLat
+ * implement the needed computations for a LngLatHandling
  */
 public class LngLatHandler implements LngLatHandling {
 
@@ -20,9 +20,8 @@ public class LngLatHandler implements LngLatHandling {
      * get the distance between two positions
      * @param startPosition is where the start is
      * @param endPosition is where the end is
-     * @return the euclidean distance between the positions
+     * Return the euclidean distance between the positions
      */
-
     public double distanceTo(LngLat startPosition, LngLat endPosition){
 
         //Finds the pythagorean distance between start and end positions
@@ -33,7 +32,7 @@ public class LngLatHandler implements LngLatHandling {
      * check if two positions are close (< than SystemConstants.DRONE_IS_CLOSE_DISTANCE)
      * @param startPosition is the starting position
      * @param otherPosition is the position to check
-     * @return if the positions are close
+     * Return true if the positions are close to each other
      */
     public boolean isCloseTo(LngLat startPosition, LngLat otherPosition){
 
@@ -44,7 +43,7 @@ public class LngLatHandler implements LngLatHandling {
     /**
      * @param x,y         The coordinate of the point to check
      * @param x1,y1,x2,y2 The coordinates of the two points making the edge
-     * @return True if the right vertical line that passes through x,y meet the edge.
+     * Return true if the right vertical line that passes through x,y meet the edge
      */
     private boolean passEdge(double x, double y, double x1, double y1, double x2, double y2) {
         double boty = Math.min(y1, y2);
@@ -66,7 +65,7 @@ public class LngLatHandler implements LngLatHandling {
      * using Basic Ray tracing algorithm to see if the point is in the polygon
      * @param position to check
      * @param region as a closed polygon
-     * @return if the position is inside the region that includes the border
+     * Return true if the position is inside the region that includes the border
      */
     public boolean isInRegion(LngLat position, NamedRegion region) {
 
@@ -89,7 +88,7 @@ public class LngLatHandler implements LngLatHandling {
      * find the next position if an angle is applied to a startPosition
      * @param startPosition is where the start is
      * @param angle is the angle to use in degrees
-     * @return the new position after the angle is used if the angle is valid
+     * Return the new position after the angle is used if the angle is valid
      */
     public LngLat nextPosition(LngLat startPosition, double angle) {
 
