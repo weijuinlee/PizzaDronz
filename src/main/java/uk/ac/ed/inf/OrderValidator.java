@@ -254,9 +254,13 @@ public class OrderValidator implements OrderValidation {
     private static boolean isCardNumberValid(String creditCardNumber) {
 
         boolean isValid = false;
+
+        //Check is number are numeric
         if (isNumeric(creditCardNumber)
                 && isValidLuhn(creditCardNumber)
                 && creditCardNumber.length() == 16) {
+
+            //Check is card is visa or master
             String regex = "^(?:(?<visa>4[0-9]{3})|"
                     + "(?<mastercard>(222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720|5[1-5][0-9]{2})))";
             isValid = Pattern.matches(regex, creditCardNumber.substring(0,4));
