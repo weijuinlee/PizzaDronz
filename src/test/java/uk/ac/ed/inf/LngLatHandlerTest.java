@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import uk.ac.ed.inf.ilp.data.LngLat;
 import uk.ac.ed.inf.ilp.data.NamedRegion;
-import uk.ac.ed.inf.ilp.data.Pizza;
 
 /**
  * Unit test for LngLatHandler
