@@ -43,13 +43,11 @@ public class App
                     "random-number generator.");
             return false;
         }
-//        else if (isUrlValid(url)) {
         // parsing arguments into date and url
         String date = args[0];
         String url = args[1];
 
         try {
-
             // Verify the date format
             DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate.parse(date, format);
@@ -60,6 +58,7 @@ public class App
 
         }
         try {
+            // Verify if url malformed and has wrong URI syntax
             URL obj = new URL(url);
             obj.toURI();
             return true;
