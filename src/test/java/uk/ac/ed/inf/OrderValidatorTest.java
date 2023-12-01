@@ -42,17 +42,18 @@ public class OrderValidatorTest {
 
         var validatedOrder =
                 new OrderValidator().validateOrder(order,
-                        new Restaurant[]{new Restaurant("myRestaurant",
+                        new Restaurant[]{
+                                new Restaurant("myRestaurant",
                                 new LngLat(55.945535152517735, -3.1912869215011597),
                                 new DayOfWeek[]{DayOfWeek.MONDAY, DayOfWeek.FRIDAY},
                                 new Pizza[]{new Pizza("A", 1212)}),
-                        new Restaurant("otherRestaurant",
+                                new Restaurant("otherRestaurant",
                                 new LngLat(55.945535152517735, -3.1912869215011597),
                                 new DayOfWeek[]{DayOfWeek.MONDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY},
                                 new Pizza[]{
                                         new Pizza("K", 1212),
                                         new Pizza("D", 1212)}),
-                        new Restaurant("otherRestaurant",
+                                new Restaurant("otherRestaurant",
                                 new LngLat(55.945535152517735, -3.1912869215011597),
                                 new DayOfWeek[]{DayOfWeek.MONDAY, DayOfWeek.FRIDAY},
                                 new Pizza[]{

@@ -13,7 +13,7 @@ public class LngLatHandlerTest
     private static final LngLat appletonTower = new LngLat(-3.186874, 55.944494);
     private final LngLat businessSchool = new LngLat(-3.1873,55.9430);
     private final LngLat edinburghAirport = new LngLat(-3.3632,55.9485);
-    LngLatHandler lngLatHandler = new LngLatHandler();
+    LngLatHandler lngLatHandler = new LngLatHandler(appletonTower);
     private final NamedRegion central = new NamedRegion(
             "central",
             new LngLat[]{

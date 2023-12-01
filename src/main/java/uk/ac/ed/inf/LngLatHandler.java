@@ -8,8 +8,14 @@ import static uk.ac.ed.inf.ilp.constant.SystemConstants.*;
 
 /**
  * implement the needed computations for a LngLatHandling
+ * @author B209981
  */
 public class LngLatHandler implements LngLatHandling {
+
+    public LngLatHandler(LngLat currentPosition) {
+        double lng = currentPosition.lng();
+        double lat = currentPosition.lat();
+    }
 
     //constants for angles
     static final int MIN_ANGLE = 0;

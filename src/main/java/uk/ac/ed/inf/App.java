@@ -1,11 +1,17 @@
 package uk.ac.ed.inf;
 
+import uk.ac.ed.inf.ilp.data.NamedRegion;
+import uk.ac.ed.inf.ilp.data.Order;
+import uk.ac.ed.inf.ilp.data.Restaurant;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Main class for the pizzaDronz, this is the entry point of the application.
@@ -14,17 +20,36 @@ public class App
 {
     public static void main( String[] args )
     {
-
+        System.out.println("[Info]: Main Application started");
         if (!argsValidator(args)) {
             return;
         }
 
-        // parsing arguments into date and url
         String date = args[0];
         String url = args[1];
 
-        System.out.println(date);
-        System.out.println(url);
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+
+        boolean clientIsAlive = new Client(url).isAlive();
+
+        if (clientIsAlive){
+            Client client = new Client(url);
+
+            // Get responses from REST service.
+            System.out.println("[Info]: Accessing ILP REST Service");
+
+            Order[] orderList = client.orders(date);
+//            System.out.println(orderList.length);
+//            System.out.println(orderList[0].getPriceTotalInPence());
+
+
+            Restaurant[] restaurantList = client.restaurants();
+//            System.out.println(restaurantList.length);
+//            System.out.println(restaurantList.getClass());
+
+        }
     }
 
     /**
@@ -55,7 +80,6 @@ public class App
         } catch (DateTimeParseException e) {
             System.err.println("[Error]: Please provide a valid date in YYYY-MM-DD format.");
             return false;
-
         }
         try {
             // Verify if url malformed and has wrong URI syntax
