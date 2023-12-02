@@ -18,21 +18,8 @@ import java.util.List;
 
 // A class that matches the JSON format for the spec
 class flightpathMove {
-    private final String orderNo;
-    private final double fromLongitude;
-    private final double fromLatitude;
-    private final double angle;
-    private final double toLongitude;
-    private final double toLatitude;
-
 
     public flightpathMove(String orderNo, double fromLongitude, double fromLatitude, double angle, double toLongitude, double toLatitude) {
-        this.orderNo = orderNo;
-        this.toLongitude = toLongitude;
-        this.toLatitude = toLatitude;
-        this.angle = angle;
-        this.fromLatitude = fromLatitude;
-        this.fromLongitude = fromLongitude;
     }
 }
 
