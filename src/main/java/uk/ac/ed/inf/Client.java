@@ -83,7 +83,7 @@ public record Client(String url) {
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             return response.body();
         } catch (Exception e) {
-            System.err.println("[Error]: Unable to make a GET request to " + endpoint + " - " + e.getMessage());
+            System.err.println("[Error]: Unable to make a GET request to " + endpoint + " - " + e.getMessage() + ".");
             return null;
         }
     }

@@ -17,10 +17,6 @@ public class LngLatHandler implements LngLatHandling {
     static final int MIN_ANGLE = 0;
     static final int MAX_ANGLE = 360;
     static final int HOVER = 999;
-    private final double f = Double.MAX_VALUE;
-    private final double g = Double.MAX_VALUE;
-    private double lng;
-    private double lat;
 
     /**
      * get the distance between two positions
@@ -136,11 +132,11 @@ public class LngLatHandler implements LngLatHandling {
                 case "999.0":
                     return (startPosition);
                 default:
-                    System.err.println("Angle within range but not one of 16 directions");
+                    System.err.println("[Error]: Angle within range but not one of 16 directions.");
                     return (startPosition);
             }
         } else {
-            System.err.println("Angle is not within range");
+            System.err.println("[Error]: Angle is not within range.");
             return (startPosition);
         }
     }

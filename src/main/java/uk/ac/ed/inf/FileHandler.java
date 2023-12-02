@@ -26,7 +26,7 @@ public class FileHandler {
                 System.out.println("[Info]: resultfiles directory already exists.");
             } else {
                 // Log other IO exceptions
-                System.err.println("[Error]: Unable to create resultfiles directory - " + e.getMessage());
+                System.err.println("[Error]: Unable to create resultfiles directory - " + e.getMessage() + ".");
             }
         }
     }

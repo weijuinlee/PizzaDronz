@@ -13,34 +13,13 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 
-// A class that matches the JSON format for the spec
-class flightpathMove {
-    private final String orderNo;
-    private final double fromLongitude;
-    private final double fromLatitude;
-    private final double angle;
-    private final double toLongitude;
-    private final double toLatitude;
-
-
-    public flightpathMove(String orderNo, double fromLongitude, double fromLatitude, double angle, double toLongitude, double toLatitude) {
-        this.orderNo = orderNo;
-        this.toLongitude = toLongitude;
-        this.toLatitude = toLatitude;
-        this.angle = angle;
-        this.fromLatitude = fromLatitude;
-        this.fromLongitude = fromLongitude;
-    }
-}
-
-
 public class pathGEO {
     public static LngLat apple = new LngLat(-3.186874, 55.944494); //SPECIFIED IN SPEC
     public static ArrayList<Restaurant> visitedList = new ArrayList<>();
 
-    public static List<flightpathMove> flightFile(List<Order> orders, List<List<Node>> route){
+    public static List<SingleMove> flightFile(List<Order> orders, List<List<Node>> route){
         // Make use of the list of paths of restaurant to Appleton
-        List<flightpathMove> toReturn = new ArrayList<>();
+        List<SingleMove> toReturn = new ArrayList<>();
         final int[] count = {-1};
 
         // Loop through each path in the list
@@ -53,8 +32,8 @@ public class pathGEO {
                 Collections.reverse(path);
                 path.forEach(Node -> {
                     try {
-                        // For each Node in the path, create a new flightPathMove
-                        toReturn.add(new flightpathMove(orders.get(count[0]).getOrderNo(),Node.coordinates.lng(),Node.coordinates.lat(), ((180-Node.angle)%360), path.get(iter1[0] +1).coordinates.lng(),path.get(iter1[0] +1).coordinates.lat()));
+                        // For each Node in the path, create a new SingleMove
+                        toReturn.add(new SingleMove(orders.get(count[0]).getOrderNo(),Node.coordinates.lng(),Node.coordinates.lat(), ((180-Node.angle)%360), path.get(iter1[0] +1).coordinates.lng(),path.get(iter1[0] +1).coordinates.lat()));
                         // The angles are reversed as we initially reverse the path
                         iter1[0]++;
                     } catch (Exception e){
@@ -62,12 +41,12 @@ public class pathGEO {
                     }
                 });
                 // Add in the hover step
-                toReturn.add(new flightpathMove(orders.get(count[0]).getOrderNo(),path.get(path.size()-1).coordinates.lng(),path.get(path.size()-1).coordinates.lng(),999,path.get(path.size()-1).coordinates.lng(),path.get(path.size()-1).coordinates.lng()));
+                toReturn.add(new SingleMove(orders.get(count[0]).getOrderNo(),path.get(path.size()-1).coordinates.lng(),path.get(path.size()-1).coordinates.lng(),999,path.get(path.size()-1).coordinates.lng(),path.get(path.size()-1).coordinates.lng()));
                 // Reverse the path again (so that it now goes restaurant -> Appleton)
                 Collections.reverse(path);
                 path.forEach(Node -> {
                     try {
-                        toReturn.add(new flightpathMove(orders.get(count[0]).getOrderNo(),Node.coordinates.lng(),Node.coordinates.lat(), Node.angle, path.get(iter2[0] +1).coordinates.lng(),path.get(iter2[0] +1).coordinates.lat()));
+                        toReturn.add(new SingleMove(orders.get(count[0]).getOrderNo(),Node.coordinates.lng(),Node.coordinates.lat(), Node.angle, path.get(iter2[0] +1).coordinates.lng(),path.get(iter2[0] +1).coordinates.lat()));
                         // The angles are back to normal as we are using the initial path
                         iter2[0]++;
                     } catch (Exception e){
@@ -75,7 +54,7 @@ public class pathGEO {
                     }
                 });
                 // Add in another hover step
-                toReturn.add(new flightpathMove(orders.get(count[0]).getOrderNo(),path.get(path.size()-1).coordinates.lng(),path.get(path.size()-1).coordinates.lng(),999,path.get(path.size()-1).coordinates.lng(),path.get(path.size()-1).coordinates.lng()));
+                toReturn.add(new SingleMove(orders.get(count[0]).getOrderNo(),path.get(path.size()-1).coordinates.lng(),path.get(path.size()-1).coordinates.lng(),999,path.get(path.size()-1).coordinates.lng(),path.get(path.size()-1).coordinates.lng()));
             }
         });
         return toReturn;
@@ -137,16 +116,16 @@ public class pathGEO {
         // Define the path for the new JSON file
         String flightFileName = "flightpath-"+date+".json";
 
-        // For each order, create a new flightpathMove instance to be added to the JSON
-        List<flightpathMove> flights = flightFile(Orders,route);
+        // For each order, create a new SingleMove instance to be added to the JSON
+        List<SingleMove> flights = flightFile(Orders,route);
 
-        // Build the new JSON file using the flightpathMove class and write to relevant file
+        // Build the new JSON file using the SingleMove class and write to relevant file
         try (Writer writer = new FileWriter("resultfiles/"+flightFileName)) {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             gson.toJson(flights, writer);
-            System.out.println("Flightpath file written");
+            System.out.println("[Info]: Flightpath file written.");
         } catch (IOException e) {
-            System.err.println("Unable to write flight");
+            System.err.println("[Error]: Unable to write flight.");
         }
 
         // Define the path for the new JSON file
@@ -158,9 +137,9 @@ public class pathGEO {
         // Write the new geoJSON file to relevant file
         try (Writer writer = new FileWriter("resultfiles/"+droneFileName)) {
             writer.write(droneJSON);
-            System.out.println("Drone file written");
+            System.out.println("[Info]: Drone file written.");
         } catch (IOException e) {
-            System.err.println("Unable to write drone");
+            System.err.println("[Error]: Unable to write drone.");
         }
 
         return ordersValidNoPath;
@@ -201,7 +180,7 @@ public class pathGEO {
             AStar.closedSet = new HashSet<>();
 
             if (!AStar.findShortestPath(NoFlyZones, start, goal, Central)) {
-                System.err.println("No path found to: " + restrnt.name());
+                System.err.println("[Info]: No path found to: " + restrnt.name() + ".");
                 visitedList.add(restrnt);
                 return null;
             }

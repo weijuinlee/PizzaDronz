@@ -21,7 +21,7 @@ public class App
 {
     public static void main( String[] args )
     {
-        System.out.println("[Info]: Main Application started");
+        System.out.println("[Info]: Main Application started.");
         if (!argsValidator(args)) {
             return;
         }
@@ -39,7 +39,7 @@ public class App
             Client client = new Client(url);
 
             // Get responses from REST service.
-            System.out.println("[Info]: Accessing ILP REST Service");
+            System.out.println("[Info]: Accessing ILP REST Service.");
 
             Order[] orderList = client.orders(date);
             Restaurant[] restaurantList = client.restaurants();
@@ -80,12 +80,12 @@ public class App
                     }
 
                     // Create the Order JSON file from list of all validated orders
-                    orderJSON.main(updatedOrderList, date);
+                    Delivery.writeToFile(updatedOrderList, date);
 
                 } else {
-                    System.out.println("[Info]: No orders for selected date");
+                    System.out.println("[Info]: No orders for selected date.");
                     FileHandler.resultFiles();
-                    orderJSON.main(updatedOrderList, date);
+                    Delivery.writeToFile(updatedOrderList, date);
                     pathGEO.main(validOrderList, restaurantDetailsList, url, date);
                 }
             }
