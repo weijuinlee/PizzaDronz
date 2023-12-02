@@ -6,6 +6,7 @@ import uk.ac.ed.inf.ilp.data.Restaurant;
 import uk.ac.ed.inf.ilp.gsonUtils.LocalDateDeserializer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -13,118 +14,114 @@ import java.net.http.HttpClient;
 import java.time.LocalDate;
 
 /**
- * Client to perform get request and deserialize response
- * @param url is the base url
+ * Client to perform HTTP GET requests and deserialize responses.
+ *
  * @author B209981
  */
 public record Client(String url) {
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder().build();
 
     /**
-     * Check is ILP REST Service is alive
-     * Return the euclidean distance between the positions
+     * Checks if the ILP REST Service is alive.
+     *
+     * @return true if the service responds, false otherwise.
      */
     public boolean isAlive() {
+        String endpoint = "isAlive";
+        String response = sendGetRequest(endpoint);
 
-        HttpClient client = HttpClient.newBuilder().build();
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(this.url + "isAlive")).build();
-        HttpResponse<String> response;
-
-        try {
-
-            // Send the request and store the ILP REST Service response
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            // Use a GsonBuilder to deserialize the json returned
-            Gson gson = new GsonBuilder().create();
-            return gson.fromJson(response.body(), boolean.class);
-
-        } catch (Exception e) {
-            System.err.println("[Error]: ILP REST Service is down");
+        if (response == null) {
             return false;
         }
+
+        Gson gson = new GsonBuilder().create();
+        return gson.fromJson(response, boolean.class);
     }
 
+    /**
+     * Retrieves orders for a specific date.
+     *
+     * @param date The date for which to retrieve orders.
+     * @return Array of orders for the given date, or null if the request fails.
+     */
     public Order[] orders(String date) {
+        String endpoint = "orders/" + date;
+        String response = sendGetRequest(endpoint);
 
-        HttpClient client = HttpClient.newBuilder().build();
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(this.url + "orders/" + date)).build();
-        HttpResponse<String> response;
-
-        try {
-
-            // Send the request and store the ILP REST Service response
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            // Use a GsonBuilder to deserialize the json returned
-            Gson gson = new GsonBuilder().registerTypeAdapter(LocalDate.class, new LocalDateDeserializer()).create();
-            return gson.fromJson(response.body(), Order[].class);
-
-        } catch (Exception e) {
-            System.err.println("[Error]: Unable to make a get request for orders");
+        if (response == null) {
             return null;
         }
+
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDate.class, new LocalDateDeserializer())
+                .create();
+        return gson.fromJson(response, Order[].class);
     }
 
+    /**
+     * Retrieves the list of restaurants.
+     *
+     * @return Array of restaurants, or null if the request fails.
+     */
     public Restaurant[] restaurants() {
+        String endpoint = "restaurants";
+        return sendGetRequest(endpoint, Restaurant[].class);
+    }
 
-        HttpClient client = HttpClient.newBuilder().build();
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(this.url + "restaurants")).build();
-        HttpResponse<String> response;
+    /**
+     * Sends a GET request to the specified endpoint and returns the response as a String.
+     *
+     * @param endpoint The endpoint to which the GET request is sent.
+     * @return The response body as a String, or null in case of an error.
+     */
+    private String sendGetRequest(String endpoint) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(this.url + endpoint))
+                .build();
 
         try {
-
-            // Send the restaurant request and store the ILP REST Service response
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            // Use a GsonBuilder to deserialize the json returned
-            Gson gson = new GsonBuilder().create();
-            return gson.fromJson(response.body(), Restaurant[].class);
-
+            HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.body();
         } catch (Exception e) {
-            System.err.println("[Error]: Unable to make a get request for restaurants");
+            System.err.println("[Error]: Unable to make a GET request to " + endpoint + " - " + e.getMessage());
             return null;
         }
     }
 
+    /**
+     * Sends a GET request to the specified endpoint and deserializes the JSON response into the specified type.
+     *
+     * @param endpoint The endpoint to which the GET request is sent.
+     * @param type The class of the type to deserialize into.
+     * @return The deserialized object, or null in case of an error.
+     */
+    private <T> T sendGetRequest(String endpoint, Class<T> type) {
+        String response = sendGetRequest(endpoint);
+
+        if (response == null) {
+            return null;
+        }
+
+        Gson gson = new GsonBuilder().create();
+        return gson.fromJson(response, type);
+    }
+
+    /**
+     * Retrieves the central area information.
+     *
+     * @return NamedRegion object representing the central area, or null if the request fails.
+     */
     public NamedRegion centralArea() {
-
-        HttpClient client = HttpClient.newBuilder().build();
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(this.url + "/centralArea")).build();
-        HttpResponse<String> response;
-
-        try {
-
-            // Send the restaurant request and store the ILP REST Service response
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            // Use a GsonBuilder to deserialize the json returned
-            Gson gson = new GsonBuilder().create();
-            return gson.fromJson(response.body(), NamedRegion.class);
-
-        } catch (Exception e) {
-            System.err.println("[Error]: Unable to make a get request for central area");
-            return null;
-        }
+        return sendGetRequest("centralArea", NamedRegion.class);
     }
 
+    /**
+     * Retrieves the no-fly zones.
+     *
+     * @return Array of NamedRegion objects representing no-fly zones, or null if the request fails.
+     */
     public NamedRegion[] noFlyZones() {
-
-        HttpClient client = HttpClient.newBuilder().build();
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(this.url + "/noFlyZones")).build();
-        HttpResponse<String> response;
-
-        try {
-
-            // Send the restaurant request and store the ILP REST Service response
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            // Use a GsonBuilder to deserialize the json returned
-            Gson gson = new GsonBuilder().create();
-            return gson.fromJson(response.body(),NamedRegion[].class);
-
-        } catch (Exception e) {
-            System.err.println("[Error]: Unable to make a get request for no fly zones");
-            return null;
-        }
+        return sendGetRequest("noFlyZones", NamedRegion[].class);
     }
+
 }

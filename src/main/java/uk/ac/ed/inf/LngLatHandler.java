@@ -145,14 +145,4 @@ public class LngLatHandler implements LngLatHandling {
         }
     }
 
-    public double distanceTo( LngLat coordinate ){
-        return Math.sqrt(Math.pow(this.lng - coordinate.lng(),2) + Math.pow(this.lat - coordinate.lat(),2));
-    }
-
-    public double getLng(){
-        return lng;
-    }
-    public double getLat(){
-        return lat;
-    }
 }

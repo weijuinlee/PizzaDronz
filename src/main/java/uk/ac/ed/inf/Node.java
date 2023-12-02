@@ -64,16 +64,15 @@ class Node {
             return true;
         }
 
-        // Check for null and compare classes - if 'obj' is null or belongs to a different class, they are not equal.
+        // Check for null and compare classes - if object is null or belongs to a different class, they are not equal.
         if (object == null || getClass() != object.getClass()) {
             return false;
         }
 
-        // Cast 'obj' to a Node - since we've checked the class above, this is safe.
+        // Cast object to a Node - since we've checked the class above, this is safe.
         Node other = (Node) object;
 
         // Compare the relevant fields for equality.
-        // Use Objects.equals to handle potential nulls in coordinates.
         return Objects.equals(coordinates, other.coordinates);
     }
 }
