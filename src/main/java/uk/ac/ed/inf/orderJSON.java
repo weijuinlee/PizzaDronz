@@ -12,12 +12,16 @@ import java.util.List;
 
 // A class that matches the JSON format for the spec
 class shortOrder{
+    private final String orderNo;
+    private final String orderStatus;
+    private final String orderValidationCode;
+    private final int costInPence;
 
     public shortOrder(Order order){
-        String orderNo = order.getOrderNo();
-        String orderStatus = order.getOrderStatus().toString();
-        String orderValidationCode = order.getOrderValidationCode().toString();
-        int costInPence = order.getPriceTotalInPence();
+        this.orderNo = order.getOrderNo();
+        this.orderStatus = order.getOrderStatus().toString();
+        this.orderValidationCode = order.getOrderValidationCode().toString();
+        this.costInPence = order.getPriceTotalInPence();
     }
 }
 
