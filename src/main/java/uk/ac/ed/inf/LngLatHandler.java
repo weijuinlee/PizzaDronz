@@ -5,9 +5,6 @@ import uk.ac.ed.inf.ilp.interfaces.LngLatHandling;
 import uk.ac.ed.inf.ilp.data.LngLat;
 import uk.ac.ed.inf.ilp.data.NamedRegion;
 
-import java.util.Arrays;
-import java.util.Map;
-
 import static uk.ac.ed.inf.ilp.constant.SystemConstants.*;
 
 /**
