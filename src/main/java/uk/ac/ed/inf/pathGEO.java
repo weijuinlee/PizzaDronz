@@ -3,23 +3,33 @@ package uk.ac.ed.inf;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mapbox.geojson.*;
-import com.mapbox.geojson.Point;
 import uk.ac.ed.inf.ilp.data.LngLat;
 import uk.ac.ed.inf.ilp.data.NamedRegion;
 import uk.ac.ed.inf.ilp.data.Order;
 import uk.ac.ed.inf.ilp.data.Restaurant;
 
-import java.awt.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
-import java.util.List;
 
 // A class that matches the JSON format for the spec
 class flightpathMove {
+    private final String orderNo;
+    private final double fromLongitude;
+    private final double fromLatitude;
+    private final double angle;
+    private final double toLongitude;
+    private final double toLatitude;
+
 
     public flightpathMove(String orderNo, double fromLongitude, double fromLatitude, double angle, double toLongitude, double toLatitude) {
+        this.orderNo = orderNo;
+        this.toLongitude = toLongitude;
+        this.toLatitude = toLatitude;
+        this.angle = angle;
+        this.fromLatitude = fromLatitude;
+        this.fromLongitude = fromLongitude;
     }
 }
 
@@ -28,7 +38,7 @@ public class pathGEO {
     public static LngLat apple = new LngLat(-3.186874, 55.944494); //SPECIFIED IN SPEC
     public static ArrayList<Restaurant> visitedList = new ArrayList<>();
 
-    public static List<flightpathMove> flightFile(List<Order> orders, List<List<Cell>> route){
+    public static List<flightpathMove> flightFile(List<Order> orders, List<List<Node>> route){
         // Make use of the list of paths of restaurant to Appleton
         List<flightpathMove> toReturn = new ArrayList<>();
         final int[] count = {-1};
@@ -41,10 +51,10 @@ public class pathGEO {
                 final int[] iter2 = {0};
                 // Reverse the path (so that it starts by going Appleton -> restaurant)
                 Collections.reverse(path);
-                path.forEach(cell -> {
+                path.forEach(Node -> {
                     try {
-                        // For each cell in the path, create a new flightPathMove
-                        toReturn.add(new flightpathMove(orders.get(count[0]).getOrderNo(),cell.coords.lng(),cell.coords.lat(), ((180-cell.angle)%360), path.get(iter1[0] +1).coords.lng(),path.get(iter1[0] +1).coords.lat()));
+                        // For each Node in the path, create a new flightPathMove
+                        toReturn.add(new flightpathMove(orders.get(count[0]).getOrderNo(),Node.coordinates.lng(),Node.coordinates.lat(), ((180-Node.angle)%360), path.get(iter1[0] +1).coordinates.lng(),path.get(iter1[0] +1).coordinates.lat()));
                         // The angles are reversed as we initially reverse the path
                         iter1[0]++;
                     } catch (Exception e){
@@ -52,12 +62,12 @@ public class pathGEO {
                     }
                 });
                 // Add in the hover step
-                toReturn.add(new flightpathMove(orders.get(count[0]).getOrderNo(),path.get(path.size()-1).coords.lng(),path.get(path.size()-1).coords.lng(),999,path.get(path.size()-1).coords.lng(),path.get(path.size()-1).coords.lng()));
+                toReturn.add(new flightpathMove(orders.get(count[0]).getOrderNo(),path.get(path.size()-1).coordinates.lng(),path.get(path.size()-1).coordinates.lng(),999,path.get(path.size()-1).coordinates.lng(),path.get(path.size()-1).coordinates.lng()));
                 // Reverse the path again (so that it now goes restaurant -> Appleton)
                 Collections.reverse(path);
-                path.forEach(cell -> {
+                path.forEach(Node -> {
                     try {
-                        toReturn.add(new flightpathMove(orders.get(count[0]).getOrderNo(),cell.coords.lng(),cell.coords.lat(), cell.angle, path.get(iter2[0] +1).coords.lng(),path.get(iter2[0] +1).coords.lat()));
+                        toReturn.add(new flightpathMove(orders.get(count[0]).getOrderNo(),Node.coordinates.lng(),Node.coordinates.lat(), Node.angle, path.get(iter2[0] +1).coordinates.lng(),path.get(iter2[0] +1).coordinates.lat()));
                         // The angles are back to normal as we are using the initial path
                         iter2[0]++;
                     } catch (Exception e){
@@ -65,13 +75,13 @@ public class pathGEO {
                     }
                 });
                 // Add in another hover step
-                toReturn.add(new flightpathMove(orders.get(count[0]).getOrderNo(),path.get(path.size()-1).coords.lng(),path.get(path.size()-1).coords.lng(),999,path.get(path.size()-1).coords.lng(),path.get(path.size()-1).coords.lng()));
+                toReturn.add(new flightpathMove(orders.get(count[0]).getOrderNo(),path.get(path.size()-1).coordinates.lng(),path.get(path.size()-1).coordinates.lng(),999,path.get(path.size()-1).coordinates.lng(),path.get(path.size()-1).coordinates.lng()));
             }
         });
         return toReturn;
     }
 
-    public static String droneFile(List<List<Cell>> route){
+    public static String droneFile(List<List<Node>> route){
         // Make use of the list of paths of restaurant to Appleton
         List<Point> dronePath = new ArrayList<>();
         // Loop through each path in the list
@@ -81,13 +91,13 @@ public class pathGEO {
                 Collections.reverse(e);
 
                 // Add a point to the list storing all points in order
-                e.forEach(cell -> dronePath.add(Point.fromLngLat(cell.coords.lng(), cell.coords.lat())));
+                e.forEach(Node -> dronePath.add(Point.fromLngLat(Node.coordinates.lng(), Node.coordinates.lat())));
 
                 // Reverse the path again (so that it now goes restaurant -> Appleton)
                 Collections.reverse(e);
 
                 // And add each coordinate point again
-                e.forEach(cell -> dronePath.add(Point.fromLngLat(cell.coords.lng(), cell.coords.lat())));
+                e.forEach(Node -> dronePath.add(Point.fromLngLat(Node.coordinates.lng(), Node.coordinates.lat())));
             }
         });
 
@@ -103,7 +113,7 @@ public class pathGEO {
     }
 
     // A helper function that checks for any empty paths (unable to reach) and add to necessary list of bad orders
-    public static List<Order> ordersValidNoPath(List<List<Cell>> route, List<Order> orderNums){
+    public static List<Order> ordersValidNoPath(List<List<Node>> route, List<Order> orderNums){
         List<Order> ordersValidNoPath = new ArrayList<>();
 
         //For each path in the route, if it is empty, append corresponding order
@@ -117,7 +127,7 @@ public class pathGEO {
     }
 
     public static List<Order> main(List<Order> Orders, List<Restaurant> visits, String BASEURL, String date) {
-        List<List<Cell>> route = iterat(visits, BASEURL);
+        List<List<Node>> route = iterat(visits, BASEURL);
 
         // Any empty routes will need validation changing so append these to a list for processing in App
         List<Order> ordersValidNoPath = ordersValidNoPath(route,Orders);
@@ -156,8 +166,8 @@ public class pathGEO {
         return ordersValidNoPath;
     }
 
-    public static List<List<Cell>> iterat(List<Restaurant> visits,String BASEURL){
-        List<List<Cell>> toGoTo = new ArrayList<>();
+    public static List<List<Node>> iterat(List<Restaurant> visits,String BASEURL){
+        List<List<Node>> toGoTo = new ArrayList<>();
         // Cycle through the restaurant for every order
         for (Restaurant restToGo:visits) {
             // Add the path to the list of paths
@@ -166,7 +176,7 @@ public class pathGEO {
         return toGoTo;
     }
 
-    public static List<Cell> addToPath(Restaurant restrnt,List<List<Cell>> toGoTo,String BASEURL) {
+    public static List<Node> addToPath(Restaurant restrnt,List<List<Node>> toGoTo,String BASEURL) {
         // Check if restaurant has already been put through A* algorithm
         if (visitedList.contains(restrnt)){
             // If it has, find the first occurrence in the list of paths and return
@@ -181,13 +191,13 @@ public class pathGEO {
             NamedRegion Central = new Client(BASEURL).centralArea();
 
             // Find the start and goal positions
-            Cell start, goal;
-            start = new Cell(restLoc);
-            goal = new Cell(apple);
+            Node start, goal;
+            start = new Node(restLoc);
+            goal = new Node(apple);
 
             // Run A* algorithm to find the shortest path
             new AStar();
-            AStar.openSet = new PriorityQueue<>(Comparator.comparingDouble(c -> c.f));
+            AStar.openSet = new PriorityQueue<Node>(Comparator.comparingDouble(c -> c.total));
             AStar.closedSet = new HashSet<>();
 
             if (!AStar.findShortestPath(NoFlyZones, start, goal, Central)) {
