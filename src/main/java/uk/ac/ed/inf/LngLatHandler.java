@@ -4,6 +4,10 @@ import uk.ac.ed.inf.ilp.constant.SystemConstants;
 import uk.ac.ed.inf.ilp.interfaces.LngLatHandling;
 import uk.ac.ed.inf.ilp.data.LngLat;
 import uk.ac.ed.inf.ilp.data.NamedRegion;
+
+import java.util.Arrays;
+import java.util.Map;
+
 import static uk.ac.ed.inf.ilp.constant.SystemConstants.*;
 
 /**
@@ -12,15 +16,14 @@ import static uk.ac.ed.inf.ilp.constant.SystemConstants.*;
  */
 public class LngLatHandler implements LngLatHandling {
 
-    public LngLatHandler(LngLat currentPosition) {
-        double lng = currentPosition.lng();
-        double lat = currentPosition.lat();
-    }
-
     //constants for angles
     static final int MIN_ANGLE = 0;
     static final int MAX_ANGLE = 360;
     static final int HOVER = 999;
+    private final double f = Double.MAX_VALUE;
+    private final double g = Double.MAX_VALUE;
+    private double lng;
+    private double lat;
 
     /**
      * get the distance between two positions
@@ -143,5 +146,16 @@ public class LngLatHandler implements LngLatHandling {
             System.err.println("Angle is not within range");
             return (startPosition);
         }
+    }
+
+    public double distanceTo( LngLat coordinate ){
+        return Math.sqrt(Math.pow(this.lng - coordinate.lng(),2) + Math.pow(this.lat - coordinate.lat(),2));
+    }
+
+    public double getLng(){
+        return lng;
+    }
+    public double getLat(){
+        return lat;
     }
 }

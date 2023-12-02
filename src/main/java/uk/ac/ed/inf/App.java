@@ -1,5 +1,6 @@
 package uk.ac.ed.inf;
 
+import uk.ac.ed.inf.ilp.constant.OrderStatus;
 import uk.ac.ed.inf.ilp.data.NamedRegion;
 import uk.ac.ed.inf.ilp.data.Order;
 import uk.ac.ed.inf.ilp.data.Restaurant;
@@ -41,14 +42,53 @@ public class App
             System.out.println("[Info]: Accessing ILP REST Service");
 
             Order[] orderList = client.orders(date);
-//            System.out.println(orderList.length);
-//            System.out.println(orderList[0].getPriceTotalInPence());
-
-
             Restaurant[] restaurantList = client.restaurants();
-//            System.out.println(restaurantList.length);
-//            System.out.println(restaurantList.getClass());
 
+            if (orderList != null && restaurantList != null) {
+
+                List<Order> validOrderList = new ArrayList<>();
+                List<Restaurant> restaurantDetailsList = new ArrayList<>();
+                List<Order> updatedOrderList = new ArrayList<>();
+
+                NamedRegion[] noFlyZone = client.noFlyZones();
+
+                if (orderList.length > 0) {
+
+                    FileHandler.resultFiles();
+
+                    for (Order order : orderList) {
+
+                        Order validatedOrder = new OrderValidator().validateOrder(order, restaurantList);
+
+                        if (validatedOrder != null) {
+
+                            if (validatedOrder.getOrderStatus() == OrderStatus.VALID_BUT_NOT_DELIVERED) {
+                                validOrderList.add(order);
+                                restaurantDetailsList.add(RestaurantHandler.getRestaurantDetails(restaurantList, validatedOrder));
+                            }
+                            updatedOrderList.add(validatedOrder);
+                        }
+                    }
+
+                    // Create Flightpath and Drone files from only the valid orders and corresponding restaurants
+                    List<Order> ordersValidNoPath = pathGEO.main(validOrderList, restaurantDetailsList, url, date);
+
+
+                    // Take any orders that are in the list of orders with no paths and update their validity status
+                    for (Order valid:ordersValidNoPath) {
+                        valid.setOrderStatus(OrderStatus.VALID_BUT_NOT_DELIVERED);
+                    }
+
+                    // Create the Order JSON file from list of all validated orders
+                    orderJSON.main(updatedOrderList, date);
+
+                } else {
+                    System.out.println("[Info]: No orders for selected date");
+                    FileHandler.resultFiles();
+                    orderJSON.main(updatedOrderList, date);
+                    pathGEO.main(validOrderList, restaurantDetailsList, url, date);
+                }
+            }
         }
     }
 
@@ -94,4 +134,16 @@ public class App
             return false;
         }
     }
+
+
+//    public static Restaurant getRestrnt(Restaurant[] restrnts,Order validOrder){
+//        // This looks at the first pizza in a valid order and returns its restaurant of origin
+//        for (Restaurant definedRestaurant : restrnts) {
+//            if (Arrays.asList(definedRestaurant.menu()).contains(validOrder.getPizzasInOrder()[0])) {
+//                return definedRestaurant;
+//            }
+//        }
+//        return null; //this would never be reached as only valid pizzas are passed to this function
+//    }
+
 }
