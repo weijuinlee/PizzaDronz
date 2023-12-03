@@ -7,6 +7,8 @@ import java.nio.file.Paths;
 
 /**
  * Handles file operations such as creating directories for result files.
+ *
+ *  @author B209981
  */
 public class FileHandler {
 

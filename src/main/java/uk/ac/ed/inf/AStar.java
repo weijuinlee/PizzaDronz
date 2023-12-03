@@ -6,141 +6,138 @@ import uk.ac.ed.inf.ilp.data.NamedRegion;
 
 import java.util.*;
 
+
+/**
+ * Perform pathfinding using AStar Algorithm
+ *
+ * @author B209981
+ */
 public class AStar {
-    // Define the 8 possible directions of movement
-    private static final double[] DIRS = {0.0, 45.0, 90, 135.0, 180.0, 225.0, 270.0, 315.0};
+    // Direction angles in degrees (North, Northeast, East, Southeast, South, Southwest, West, Northwest)
+    private static final double[] DIRECTIONS = {0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0};
 
-    // Global defined variables for the search
-    static PriorityQueue<Node> openSet;     // frontier
-    static HashSet<Node> closedSet;         // visited
-    static List<Node> path;                 // resulting path
+    // Open set for the nodes to be evaluated
+    static PriorityQueue<Node> openSet = new PriorityQueue<>(Comparator.comparingDouble(n -> n.total));
+    // Closed set for the nodes already evaluated
+    static HashSet<Node> closedSet = new HashSet<>();
+    // Path found by the algorithm
+    static List<Node> path;
 
-    // A* search algorithm
-    public static boolean findShortestPath(NamedRegion[] noFlyZones, Node start, Node goal, NamedRegion Central) {
+    /**
+     * Performs A* search to find the shortest path avoiding no-fly zones and staying within the central area.
+     *
+     * @param noFlyZones Array of no-fly zones
+     * @param start Start node
+     * @param goal Goal node
+     * @param central Central named region
+     * @return true if a path is found, false otherwise
+     */
+    public static boolean findShortestPath(NamedRegion[] noFlyZones, Node start, Node goal, NamedRegion central) {
         long startTime = System.nanoTime();
-
-        // Add start to the queue first
         openSet.add(start);
 
-        // Once there is element in the queue, then keep running
         while (!openSet.isEmpty()) {
-
-            // If the fail-safe checks do not work and program runs for more than 30 secs...
-            if((System.nanoTime() - startTime)> 30000000000L){
-                // ...this ensures that the program returns NO PATH for this route
+            if ((System.nanoTime() - startTime) > 30_000_000_000L) {
+                // Timeout after 30 seconds
                 return false;
             }
 
-
-            // Get the Node with the smallest cost
             Node current = openSet.poll();
-
-
-            // Mark the Node to be visited
             closedSet.add(current);
 
-            // Find the goal: early exit
-            assert current != null;
-            boolean close = new LngLatHandler().isCloseTo(current.coordinates,goal.coordinates);
-            if (close) {
-
-                // Reconstruct the path: trace by find the parent Node
-                path = new ArrayList<>();
-                while (current != null) {
-                    path.add(current);
-                    current = current.parent;
-                }
-                Collections.reverse(path);
-
+            // Check if the goal is reached
+            if (!isCloseToGoal(current, goal)) {
+                exploreNeighbors(current, noFlyZones, goal, central);
+            } else {
+                reconstructPath(current);
                 return true;
             }
 
-            // Search neighbors
-            for (double dir : DIRS) {    //Loop through each direction of movement (N,NNE,NE,NEE,E,...,NW,NNW)
-                LngLat nextCoords = new LngLatHandler().nextPosition(current.coordinates, dir);
+        }
 
-                // Neighbour Node location
-                Node next = new Node(nextCoords);
+        return false; // No path found
+    }
 
-                // Check it is not going to enter a No-Fly zone
-                boolean noFly = false;
+    // Checks if the current node is close to the goal
+    private static boolean isCloseToGoal(Node current, Node goal) {
+        return new LngLatHandler().isCloseTo(current.coordinates, goal.coordinates);
+    }
 
-                for (NamedRegion noFlyZone: noFlyZones){
-                    if (new LngLatHandler().isInRegion(nextCoords,noFlyZone)){
-                        noFly = true;
-                    }
-                }
+    // Reconstructs the path from the goal to the start
+    private static void reconstructPath(Node current) {
+        path = new ArrayList<>();
+        while (current != null) {
+            path.add(current);
+            current = current.parent;
+        }
+        Collections.reverse(path);
+    }
 
-                // Check if currently in central area, and, if so, that it does not leave central
-                // As we find only the route Restaurant -> Appleton, this condition always applies
-                if (new LngLatHandler().isInRegion(current.coordinates,Central)){
-                    if (!(new LngLatHandler().isInRegion(nextCoords,Central))){
-                        noFly = true;
-                    }
-                }
+    // Explores neighbors of the current node, updating or adding them to the open set
+    private static void exploreNeighbors(Node current, NamedRegion[] noFlyZones, Node goal, NamedRegion central) {
+        for (double direction : DIRECTIONS) {
+            LngLat nextCoords = new LngLatHandler().nextPosition(current.coordinates, direction);
+            Node next = new Node(nextCoords);
 
-                // If we have a valid move
-                if (!noFly  && !closedSet.contains(next)) {
+            if (isValidMove(nextCoords, noFlyZones, current, central)) {
+                processNeighbor(current, next, direction, goal);
+            }
+        }
+    }
 
-                    // New movement is always 1 cost
-                    double tentativeG = current.cost + SystemConstants.DRONE_MOVE_DISTANCE; //CHANGE TO DOUBLE?
-
-                    // Find the Node if it is in the frontier but not visited to see if cost updating is needed
-                    Node existing_neighbor = findNeighbor(nextCoords);
-
-                    if(existing_neighbor != null){
-                        // Check if this path is better than any previously generated path to the neighbor
-                        if(tentativeG < existing_neighbor.cost){
-                            existing_neighbor.angle = dir;
-
-                            // Update cost, parent information
-                            existing_neighbor.parent = current;
-                            existing_neighbor.cost = tentativeG;
-                            existing_neighbor.estimate = 2*heuristic(existing_neighbor, goal);
-                            existing_neighbor.total = existing_neighbor.cost + existing_neighbor.estimate;
-                        }
-                    }
-                    else{
-                        // Or directly add this Node to the frontier
-                        Node neighbor = new Node(nextCoords);
-                        neighbor.angle = dir;
-                        neighbor.parent = current;
-                        neighbor.cost = tentativeG;
-                        neighbor.estimate = 2*heuristic(neighbor, goal);
-                        neighbor.total = neighbor.cost + neighbor.estimate;
-
-                        openSet.add(neighbor);
-                    }
-                }
+    // Checks if moving to the next coordinates is valid (not entering no-fly zones and stays in central if required)
+    private static boolean isValidMove(LngLat nextCoords, NamedRegion[] noFlyZones, Node current, NamedRegion central) {
+        for (NamedRegion noFlyZone : noFlyZones) {
+            if (new LngLatHandler().isInRegion(nextCoords, noFlyZone)) {
+                return false;
             }
         }
 
-        // No path found
-        return false;
+        return !new LngLatHandler().isInRegion(current.coordinates, central) || new LngLatHandler().isInRegion(nextCoords, central);
     }
 
-    // Helper function to find and return the neighbor Node
-    // Java priority queue cannot return a specific element
-    public static Node findNeighbor(LngLat coords){
-        if(openSet.isEmpty()){
-            return null;
-        }
+    // Processes a neighbor node during search
+    private static void processNeighbor(Node current, Node neighbor, double direction, Node goal) {
+        double tentativeG = current.cost + SystemConstants.DRONE_MOVE_DISTANCE;
+        Node existingNeighbor = findNeighbor(neighbor.coordinates);
 
-        Iterator<Node> iterator = openSet.iterator();
-
-        Node find = null;
-        while (iterator.hasNext()) {
-            Node next = iterator.next();
-            if(next.coordinates.lng() == coords.lng() && next.coordinates.lat() == coords.lat()){
-                find = next;
-                break;
-            }
+        if (existingNeighbor != null && tentativeG < existingNeighbor.cost) {
+            updateNeighbor(existingNeighbor, current, tentativeG, direction, goal);
+        } else if (existingNeighbor == null) {
+            addNeighborToOpenSet(neighbor, current, tentativeG, direction, goal);
         }
-        return find;
     }
 
-    public static double heuristic(Node a, Node b) {
-        // A simple heuristic: Manhattan distance
-        return new LngLatHandler().distanceTo(a.coordinates,b.coordinates);
+    // Updates an existing neighbor in the open set
+    private static void updateNeighbor(Node neighbor, Node current, double newCost, double direction, Node goal) {
+        neighbor.parent = current;
+        neighbor.cost = newCost;
+        neighbor.angle = direction;
+        updateEstimates(neighbor, goal);
+    }
+
+    // Adds a new neighbor to the open set
+    private static void addNeighborToOpenSet(Node neighbor, Node current, double cost, double direction, Node goal) {
+        neighbor.parent = current;
+        neighbor.cost = cost;
+        neighbor.angle = direction;
+        updateEstimates(neighbor, goal);
+        openSet.add(neighbor);
+    }
+
+    // Updates cost estimates for a node
+    private static void updateEstimates(Node node, Node goal) {
+        node.estimate = 2 * heuristic(node, goal);
+        node.total = node.cost + node.estimate;
+    }
+
+    // Finds a neighbor node in the open set based on coordinates
+    private static Node findNeighbor(LngLat coords) {
+        return openSet.stream().filter(n -> n.coordinates.equals(coords)).findFirst().orElse(null);
+    }
+
+    // Heuristic function (Manhattan distance)
+    private static double heuristic(Node a, Node b) {
+        return new LngLatHandler().distanceTo(a.coordinates, b.coordinates);
     }
 }

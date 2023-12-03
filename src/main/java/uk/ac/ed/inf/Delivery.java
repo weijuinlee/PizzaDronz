@@ -11,6 +11,8 @@ import java.util.List;
 
 /**
  * Handles the creation of a JSON file for a list of orders.
+ *
+ * @author B209981
  */
 public class Delivery {
 

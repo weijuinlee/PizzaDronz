@@ -6,8 +6,8 @@ import java.util.Arrays;
 
 /**
  * Handler for restaurant-related operations.
- * @author B209981
  *
+ * @author B209981
  */
 public class RestaurantHandler {
 

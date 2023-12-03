@@ -9,6 +9,7 @@ import static uk.ac.ed.inf.ilp.constant.SystemConstants.*;
 
 /**
  * implement the needed computations for a LngLatHandling
+ *
  * @author B209981
  */
 public class LngLatHandler implements LngLatHandling {

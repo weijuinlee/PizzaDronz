@@ -71,7 +71,7 @@ public class App
                     }
 
                     // Create Flightpath and Drone files from only the valid orders and corresponding restaurants
-                    List<Order> ordersValidNoPath = PathFinding.processOrders(validOrderList, restaurantDetailsList, url, date);
+                    List<Order> ordersValidNoPath = PathFinding.main(validOrderList, restaurantDetailsList, url, date);
 
 
                     // Take any orders that are in the list of orders with no paths and update their validity status
@@ -86,7 +86,7 @@ public class App
                     System.out.println("[Info]: No orders for selected date.");
                     FileHandler.resultFiles();
                     Delivery.writeToFile(updatedOrderList, date);
-                    PathFinding.processOrders(validOrderList, restaurantDetailsList, url, date);
+                    PathFinding.main(validOrderList, restaurantDetailsList, url, date);
                 }
             }
         }
