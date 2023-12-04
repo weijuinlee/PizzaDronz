@@ -61,7 +61,7 @@ public class OrderValidator implements OrderValidation {
                 orderToValidate.setOrderStatus(INVALID);
             } else {
                 isRestaurantOpen(pizzaOrders, definedRestaurants);
-                orderToValidate.setOrderStatus(VALID_BUT_NOT_DELIVERED);
+                orderToValidate.setOrderStatus(DELIVERED);
                 orderToValidate.setOrderValidationCode(NO_ERROR);
             }
         }

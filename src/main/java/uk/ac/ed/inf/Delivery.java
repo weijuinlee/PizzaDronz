@@ -23,6 +23,7 @@ public class Delivery {
      * @param date   The date associated with these orders, used in the filename.
      */
     public static void writeToFile(List<Order> orders, String date) {
+
         String deliveriesFileName = "deliveries-" + date + ".json";
         List<SingleOrder> singleOrderList = new ArrayList<>();
 

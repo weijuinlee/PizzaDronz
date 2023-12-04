@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 
+import static uk.ac.ed.inf.LngLatHandler.HOVER;
+
 /**
  * Class responsible for path finding and generating related data for drone deliveries.
  *
@@ -21,6 +23,7 @@ import java.util.*;
 public class PathFinding {
 
     private static final LngLat appletonTower = new LngLat(-3.186874, 55.944494);
+
     private static final ArrayList<Restaurant> visitedRestaurants = new ArrayList<>();
 
     /**
@@ -95,21 +98,21 @@ public class PathFinding {
      * @param lastNode    The last node in the path where the drone will hover.
      */
     private static void addHoverMove(List<SingleMove> flightMoves, String orderNo, Node lastNode) {
-        flightMoves.add(new SingleMove(orderNo, lastNode.coordinates.lng(), lastNode.coordinates.lat(), 999, lastNode.coordinates.lng(), lastNode.coordinates.lat()));
+        flightMoves.add(new SingleMove(orderNo, lastNode.coordinates.lng(), lastNode.coordinates.lat(), HOVER, lastNode.coordinates.lng(), lastNode.coordinates.lat()));
     }
 
     /**
      * Identifies orders without valid paths.
      *
-     * @param routes The list of calculated routes for each order.
-     * @param orders The list of orders corresponding to the routes.
+     * @param paths The list of calculated paths for each order.
+     * @param orders The list of orders corresponding to the paths.
      * @return A list of orders that do not have valid paths.
      */
-    public static List<Order> filterOrdersWithoutValidPaths(List<List<Node>> routes, List<Order> orders) {
+    public static List<Order> filterOrdersWithoutValidPaths(List<List<Node>> paths, List<Order> orders) {
         List<Order> ordersWithoutValidPaths = new ArrayList<>();
 
-        for (int i = 0; i < routes.size(); i++) {
-            if (isInvalidRoute(routes.get(i))) {
+        for (int i = 0; i < paths.size(); i++) {
+            if (isInvalidPath(paths.get(i))) {
                 ordersWithoutValidPaths.add(orders.get(i));
             }
         }
@@ -118,129 +121,156 @@ public class PathFinding {
     }
 
     /**
-     * Checks if a route is invalid (null or empty).
+     * Checks if a path is invalid (null or empty).
      *
-     * @param route The route to check.
-     * @return true if the route is invalid, false otherwise.
+     * @param path The path to check.
+     * @return true if the path is invalid, false otherwise.
      */
-    private static boolean isInvalidRoute(List<Node> route) {
-        return route == null || route.isEmpty();
+    private static boolean isInvalidPath(List<Node> path) {
+        return path == null || path.isEmpty();
     }
 
-    public static String droneFile(List<List<Node>> route){
-        // Make use of the list of paths of restaurant to Appleton
+    /**
+     * Converts a list of drone paths into a GeoJSON string. Each path is represented by a list of nodes.
+     * The method processes these nodes to create a continuous path for the drone, covering each path twice
+     * (once in each direction) to simulate a round trip.
+     *
+     * @param paths List of paths for the drone, each path is a list of nodes.
+     * @return String in GeoJSON format representing the drone's path.
+     */
+    public static String droneFile(List<List<Node>> paths){
+
         List<Point> dronePath = new ArrayList<>();
-        // Loop through each path in the list
-        route.forEach(e -> {
-            if (e != null){
-                // Reverse the path (so that it starts by going Appleton -> restaurant)
-                Collections.reverse(e);
 
-                // Add a point to the list storing all points in order
-                e.forEach(cell -> dronePath.add(Point.fromLngLat(cell.coordinates.lng(), cell.coordinates.lat())));
+        for (List<Node> path : paths) {
+            if (path != null) {
 
-                // Reverse the path again (so that it now goes restaurant -> Appleton)
-                Collections.reverse(e);
+                // Reversing the path to simulate the forward path
+                Collections.reverse(path);
 
-                // And add each coordinate point again
-                e.forEach(cell -> dronePath.add(Point.fromLngLat(cell.coordinates.lng(), cell.coordinates.lat())));
+                addPathToDroneFullPath(dronePath, path);
+                // Reversing the path to simulate the return path
+                Collections.reverse(path);
+                addPathToDroneFullPath(dronePath, path);
             }
-        });
+        }
 
-        // Create a LineString feature from the points
-        Geometry geometry = LineString.fromLngLats(dronePath);
-        Feature feature = Feature.fromGeometry(geometry);
+        // Constructing a LineString geometry from the collected points
+        Geometry lineString = LineString.fromLngLats(dronePath);
+        FeatureCollection featureCollection = FeatureCollection.fromFeature(Feature.fromGeometry(lineString));
 
-        // Add it to its own Feature collection
-        FeatureCollection featureCollection = FeatureCollection.fromFeature(feature);
-
-        // Return a string in a geoJSON format
         return featureCollection.toJson();
+
     }
 
-    public static List<Order> main(List<Order> Orders, List<Restaurant> visits, String BASEURL, String date) {
-        List<List<Node>> route = iterat(visits, BASEURL);
+    /**
+     * Adds the coordinates from a path to the overall drone path.
+     *
+     * @param dronePath List of points representing the drone path.
+     * @param path     Individual path to add to the drone path.
+     */
+    private static void addPathToDroneFullPath(List<Point> dronePath, List<Node> path) {
+        path.forEach(node -> dronePath.add(Point.fromLngLat(node.coordinates.lng(), node.coordinates.lat())));
+    }
 
-        // Any empty routes will need validation changing so append these to a list for processing in App
-        List<Order> ordersValidNoPath = filterOrdersWithoutValidPaths(route,Orders);
+    /**
+     * This method processes a list of orders, computes flight paths to visit restaurants,
+     * creates flightpath JSON and drone geoJSON files, and returns orders without valid paths.
+     *
+     * @param orders   The list of orders to process.
+     * @param visits   The list of restaurants to visit.
+     * @param url  The base URL for relevant data.
+     * @param date     The date for file naming.
+     * @return         Orders without valid flight paths.
+     */
+    public static List<Order> processOrders(List<Order> orders, List<Restaurant> visits, String url, String date) {
+        // Build flight paths to restaurants
+        List<List<Node>> path = buildPathsForRestaurants(visits, url);
 
-        //Directory will already exist from createDir
+        // Find orders without valid paths
+        List<Order> ordersValidNoPath = filterOrdersWithoutValidPaths(path, orders);
 
-        // Define the path for the new JSON file
-        String flightFileName = "flightpath-"+date+".json";
+        // Define the flightpath JSON file name
+        String flightFileName = "flightpath-" + date + ".json";
 
-        // For each order, create a new SingleMove instance to be added to the JSON
-        List<SingleMove> flights = createFlightPaths(Orders,route);
+        // Create flight paths for each order
+        List<SingleMove> flights = createFlightPaths(orders, path);
 
-        // Build the new JSON file using the SingleMove class and write to relevant file
-        try (Writer writer = new FileWriter("resultfiles/"+flightFileName)) {
+        // Write flightpath JSON to a file
+        try (Writer writer = new FileWriter("resultfiles/" + flightFileName)) {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             gson.toJson(flights, writer);
-            System.out.println("Flightpath file written");
+            System.out.println("[Info]: Flightpath file written.");
         } catch (IOException e) {
-            System.err.println("Unable to write flight");
+            System.err.println("[Error]: Unable to write flightpath file.");
         }
 
-        // Define the path for the new JSON file
-        String droneFileName = "drone-"+date+".geojson";
+        // Define the drone geoJSON file name
+        String droneFileName = "drone-" + date + ".geojson";
 
-        // Run droneFile to get a geoJSON string of the relevant feature collection
-        String droneJSON = droneFile(route);
+        // Generate drone geoJSON data
+        String droneJSON = droneFile(path);
 
-        // Write the new geoJSON file to relevant file
-        try (Writer writer = new FileWriter("resultfiles/"+droneFileName)) {
+        // Write drone geoJSON to a file
+        try (Writer writer = new FileWriter("resultfiles/" + droneFileName)) {
             writer.write(droneJSON);
-            System.out.println("Drone file written");
+            System.out.println("[Info]: Drone geoJSON file written.");
         } catch (IOException e) {
-            System.err.println("Unable to write drone");
+            System.err.println("[Error]: Unable to write drone geoJSON file.s");
         }
-
         return ordersValidNoPath;
     }
 
-    public static List<List<Node>> iterat(List<Restaurant> visits,String BASEURL){
-        List<List<Node>> toGoTo = new ArrayList<>();
-        // Cycle through the restaurant for every order
-        for (Restaurant restToGo:visits) {
-            // Add the path to the list of paths
-            toGoTo.add(addToPath(restToGo,toGoTo,BASEURL));
+    /**
+     * Iterates through a list of restaurants to visit and builds paths to each restaurant
+     * based on the specified base URL. Returns a list of paths to all the restaurants.
+     *
+     * @param restaurantsToVisit The list of restaurants to visit.
+     * @param url            The base URL used to build paths.
+     * @return                   A list of paths to all the restaurants.
+     */
+    public static List<List<Node>> buildPathsForRestaurants(List<Restaurant> restaurantsToVisit, String url) {
+        List<List<Node>> pathsToRestaurants = new ArrayList<>();
+
+        for (Restaurant restaurant : restaurantsToVisit) {
+            List<Node> pathToAdd = computePathToRestaurant(restaurant, pathsToRestaurants, url);
+            pathsToRestaurants.add(pathToAdd);
         }
-        return toGoTo;
+
+        return pathsToRestaurants;
     }
 
-    public static List<Node> addToPath(Restaurant restrnt,List<List<Node>> toGoTo,String BASEURL) {
-        // Check if restaurant has already been put through A* algorithm
-        if (visitedRestaurants.contains(restrnt)){
-            // If it has, find the first occurrence in the list of paths and return
-            int index = visitedRestaurants.indexOf(restrnt);
-            visitedRestaurants.add(restrnt);
-            return toGoTo.get(index);
+    /**
+     * Adds a path to a restaurant to the list of paths, considering the restaurant's location
+     * and using the A* algorithm to find the shortest path to the restaurant.
+     *
+     * @param restaurant  The restaurant to visit.
+     * @param pathList    The list of paths to restaurants.
+     * @param url     The base URL for relevant data.
+     * @return            The path to the restaurant, or null if no path is found.
+     */
+    public static List<Node> computePathToRestaurant(Restaurant restaurant, List<List<Node>> pathList, String url) {
+        if (visitedRestaurants.contains(restaurant)) {
+            int index = visitedRestaurants.indexOf(restaurant);
+            return pathList.get(index); // Return the previously computed path
         } else {
+            LngLat restaurantLocation = restaurant.location();
+            NamedRegion[] noFlyZones = new Client(url).noFlyZones();
+            NamedRegion centralArea = new Client(url).centralArea();
 
-            // Define restaurant location and instantiate other variables
-            LngLat restLoc = restrnt.location();
-            NamedRegion[] NoFlyZones = new Client(BASEURL).noFlyZones();
-            NamedRegion Central = new Client(BASEURL).centralArea();
+            Node startNode = new Node(restaurantLocation);
+            Node goalNode = new Node(appletonTower);
 
-            // Find the start and goal positions
-            Node start, goal;
-            start = new Node(restLoc);
-            goal = new Node(appletonTower);
-
-            // Run A* algorithm to find the shortest path
-            new AStar();
-            AStar.openSet = new PriorityQueue<Node>(Comparator.comparingDouble(c -> c.total));
+            AStar.openSet = new PriorityQueue<>(Comparator.comparingDouble(node -> node.total));
             AStar.closedSet = new HashSet<>();
 
-            if (!AStar.findShortestPath(NoFlyZones, start, goal, Central)) {
-                System.err.println("No path found to: " + restrnt.name());
-                visitedRestaurants.add(restrnt);
+            if (!AStar.findShortestPath(noFlyZones, startNode, goalNode, centralArea)) {
+                System.err.println("[Error]: No path found to: " + restaurant.name() + ".");
+                visitedRestaurants.add(restaurant);
                 return null;
             }
 
-            // Update the cache array of visited restaurants
-            visitedRestaurants.add(restrnt);
-
+            visitedRestaurants.add(restaurant);
             return AStar.path;
         }
     }

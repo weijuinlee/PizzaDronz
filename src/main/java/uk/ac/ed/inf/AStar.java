@@ -13,7 +13,7 @@ import java.util.*;
  * @author B209981
  */
 public class AStar {
-    // Direction angles in degrees (North, Northeast, East, Southeast, South, Southwest, West, Northwest)
+    // Direction angles in degrees
     private static final double[] DIRECTIONS = {0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0};
 
     // Open set for the nodes to be evaluated
@@ -46,11 +46,13 @@ public class AStar {
             closedSet.add(current);
 
             // Check if the goal is reached
-            if (!isCloseToGoal(current, goal)) {
-                exploreNeighbors(current, noFlyZones, goal, central);
-            } else {
-                reconstructPath(current);
-                return true;
+            if (current != null) {
+                if (!isCloseToGoal(current, goal)) {
+                    exploreNeighbors(current, noFlyZones, goal, central);
+                } else {
+                    reconstructPath(current);
+                    return true;
+                }
             }
 
         }

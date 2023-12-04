@@ -7,7 +7,7 @@ public class AppTest
 {
     @Test
     public void validateArgumentsNullTest() {
-        assertFalse(App.argsValidator(null));
+        assertFalse(App.validateCommandLineArgs(null));
     }
 
     @Test
@@ -15,7 +15,7 @@ public class AppTest
         String[] args = new String[2];
         args[0] = "2023-09-09";
         args[1] = "https://ilp-rest.azurewebsites.net";
-        assertFalse(App.argsValidator(args));
+        assertFalse(App.validateCommandLineArgs(args));
     }
 
     @Test
@@ -25,7 +25,7 @@ public class AppTest
         args[1] = "https://ilp-rest.azurewebsites.net";
         args[2] = "cabbage";
         args[3] = "cabbage";
-        assertFalse(App.argsValidator(args));
+        assertFalse(App.validateCommandLineArgs(args));
     }
 
     @Test
@@ -34,7 +34,7 @@ public class AppTest
         args[0] = "2023-09-09";
         args[1] = "https://ilp-rest.azurewebsites.net";
         args[2] = "cabbage";
-        assertTrue(App.argsValidator(args));
+        assertTrue(App.validateCommandLineArgs(args));
     }
 
     @Test
@@ -43,7 +43,7 @@ public class AppTest
         args[0] = "2023-13-12";
         args[1] = "https://ilp-rest.azurewebsites.net";
         args[2] = "cabbage";
-        assertFalse(App.argsValidator(args));
+        assertFalse(App.validateCommandLineArgs(args));
     }
 
     @Test
@@ -52,7 +52,7 @@ public class AppTest
         args[0] = "2023/09/09";
         args[1] = "https://ilp-rest.azurewebsites.net";
         args[2] = "cabbage";
-        assertFalse(App.argsValidator(args));
+        assertFalse(App.validateCommandLineArgs(args));
     }
 
     @Test
@@ -61,7 +61,7 @@ public class AppTest
         args[0] = "2023-11-21";
         args[1] = "htts://ilp-rest.azurewebsites.net";
         args[2] = "cabbage";
-        assertFalse(App.argsValidator(args));
+        assertFalse(App.validateCommandLineArgs(args));
     }
 
     @Test
@@ -70,10 +70,6 @@ public class AppTest
         args[0] = "2023-11-21";
         args[1] = "https://ilp-rest.azurewebsites.net w3r4fregf3e";
         args[2] = "cabbage";
-        assertFalse(App.argsValidator(args));
+        assertFalse(App.validateCommandLineArgs(args));
     }
-
-
-
-
 }
