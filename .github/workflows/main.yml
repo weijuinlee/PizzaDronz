@@ -18,6 +18,9 @@ jobs:
         with:
           java-version: 17
 
+      - name: Install local dependencies
+        run: mvn install:install-file -Dfile=IlpDataObjects.jar -DgroupId=ilp -DartifactId=ilp -Dversion=1.0 -Dpackaging=jar
+
       - name: Build and Test with Maven
         run: mvn clean verify
 
