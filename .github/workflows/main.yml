@@ -27,7 +27,6 @@ jobs:
       - name: Generate JaCoCo Coverage Report
         run: mvn jacoco:report
 
-      # If you want to upload the report to a service like Codecov or Coveralls
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:

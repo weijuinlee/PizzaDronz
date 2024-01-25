@@ -146,7 +146,6 @@
               <goal>prepare-agent</goal>
             </goals>
           </execution>
-          <!-- Ensures that the code coverage report for unit tests is created after tests have been run -->
           <execution>
             <id>report</id>
             <phase>test</phase>
