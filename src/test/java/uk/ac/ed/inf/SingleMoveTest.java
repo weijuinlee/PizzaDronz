@@ -3,6 +3,12 @@ package uk.ac.ed.inf;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+/**
+ * Unit test for a single move
+ *
+ *  @author B209981
+ */
+
 public class SingleMoveTest {
 
     @Test
