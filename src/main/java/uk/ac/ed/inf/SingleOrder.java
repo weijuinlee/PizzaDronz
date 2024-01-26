@@ -25,5 +25,25 @@ class SingleOrder {
         this.costInPence = order.getPriceTotalInPence();
     }
 
+    // Getter for orderNo
+    public String getOrderNo() {
+        return orderNo;
+    }
+
+    // Getter for orderStatus
+    public String getOrderStatus() {
+        return orderStatus;
+    }
+
+    // Getter for orderValidationCode
+    public String getOrderValidationCode() {
+        return orderValidationCode;
+    }
+
+    // Getter for costInPence
+    public int getCostInPence() {
+        return costInPence;
+    }
+
 }
 
