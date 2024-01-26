@@ -10,6 +10,9 @@ import java.time.LocalDate;
 import java.util.concurrent.ThreadLocalRandom;
 import org.junit.Before;
 import static org.junit.Assert.*;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class OrderValidatorTest {
 
@@ -67,6 +70,74 @@ public class OrderValidatorTest {
         // Assert
         assertEquals(OrderStatus.INVALID, validatedOrder.getOrderStatus());
         assertEquals(OrderValidationCode.CARD_NUMBER_INVALID, validatedOrder.getOrderValidationCode());
+    }
+
+    @Test
+    public void whenCreditCardNumberIsValidThenLuhnValidationSucceeds() throws Exception {
+
+        // Arrange
+        Method isValidLuhnMethod = OrderValidator.class.getDeclaredMethod("isValidLuhn", String.class);
+        isValidLuhnMethod.setAccessible(true); // Make the method accessible
+
+        // Valid credit card numbers for testing (these should pass Luhn's algorithm)
+        String[] validNumbers = {"4539578763621486", "4716347184862961", "4929778869082405"};
+
+        for (String validNumber : validNumbers) {
+            // Act
+            boolean isValid = (boolean) isValidLuhnMethod.invoke(null, validNumber);
+
+            // Assert
+            assertTrue("Credit card number " + validNumber + " should be valid.", isValid);
+        }
+    }
+
+    @Test
+    public void whenCreditCardNumberIsInvalidThenLuhnValidationFails() throws Exception {
+
+        // Arrange
+        Method isValidLuhnMethod = OrderValidator.class.getDeclaredMethod("isValidLuhn", String.class);
+        isValidLuhnMethod.setAccessible(true); // Make the method accessible
+
+        // Invalid credit card numbers for testing (these should fail Luhn's algorithm)
+        String[] invalidNumbers = {"4539578763621487", "4716347184862962", "4929778869082406"};
+
+        for (String invalidNumber : invalidNumbers) {
+            // Act
+            boolean isValid = (boolean) isValidLuhnMethod.invoke(null, invalidNumber);
+
+            // Assert
+            assertFalse("Credit card number " + invalidNumber + " should be invalid.", isValid);
+        }
+    }
+
+    @Test
+    public void whenStringIsNumeric_thenValidationSucceeds() {
+
+        // Valid numeric strings for testing
+        String[] numericStrings = {"123", "0042", "-123456789", "0", "9876543210"};
+
+        for (String numericString : numericStrings) {
+            // Act
+            boolean isNumeric = OrderValidator.isNumeric(numericString);
+
+            // Assert
+            assertTrue("String " + numericString + " should be numeric.", isNumeric);
+        }
+    }
+
+    @Test
+    public void whenStringIsNotNumeric_thenValidationFails() {
+
+        // Invalid numeric strings for testing
+        String[] nonNumericStrings = {"abc", "12.34", "1e10", "123abc456", "", " ", null};
+
+        for (String nonNumericString : nonNumericStrings) {
+            // Act
+            boolean isNumeric = OrderValidator.isNumeric(nonNumericString);
+
+            // Assert
+            assertFalse("String " + nonNumericString + " should not be numeric.", isNumeric);
+        }
     }
 
     @Test
@@ -213,5 +284,39 @@ public class OrderValidatorTest {
         // Assert
         assertEquals(OrderStatus.DELIVERED, validatedOrder.getOrderStatus());
         assertEquals(OrderValidationCode.NO_ERROR, validatedOrder.getOrderValidationCode());
+    }
+
+    @Test
+    public void testGetPizzaPrices() throws Exception {
+        // Arrange
+        Method getPizzaPricesMethod = OrderValidator.class.getDeclaredMethod("getPizzaPrices", Restaurant[].class);
+        getPizzaPricesMethod.setAccessible(true);
+
+        // Act
+        @SuppressWarnings("unchecked")
+        HashMap<String, Integer> pizzaPrices = (HashMap<String, Integer>) getPizzaPricesMethod.invoke(orderValidator, (Object) restaurants);
+
+        // Assert
+        assertNotNull("The returned HashMap should not be null", pizzaPrices);
+        assertTrue("The HashMap should contain a key for pizza K", pizzaPrices.containsKey("K"));
+        assertEquals("The price for K should be 1212", (Integer)1212, pizzaPrices.get("K"));
+    }
+
+    @Test
+    public void testGetOpenedDays() throws Exception {
+        // Arrange
+        Method getOpenedDaysMethod = OrderValidator.class.getDeclaredMethod("getOpenedDays", Restaurant[].class);
+        getOpenedDaysMethod.setAccessible(true); // Make the method accessible
+
+        // Act
+        @SuppressWarnings("unchecked")
+        HashSet<String> openedDays = (HashSet<String>) getOpenedDaysMethod.invoke(orderValidator, (Object) restaurants);
+
+        // Assert
+        assertNotNull("The returned HashSet should not be null", openedDays);
+
+        // Assert that the opened days are correct based on your definedRestaurants
+        assertTrue("The HashSet should contain Monday", openedDays.contains(DayOfWeek.MONDAY.name()));
+        assertEquals("The HashSet should contain the correct number of days", 3, openedDays.size());
     }
 }
