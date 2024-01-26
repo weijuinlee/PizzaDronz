@@ -32,6 +32,33 @@ class SingleMove {
         this.toLongitude = toLongitude;
         this.toLatitude = toLatitude;
     }
+    // Getter for orderNo
+    public String getOrderNo() {
+        return orderNo;
+    }
 
-    // Getters for all fields can be added here if needed.
+    // Getter for fromLongitude
+    public double getFromLongitude() {
+        return fromLongitude;
+    }
+
+    // Getter for fromLatitude
+    public double getFromLatitude() {
+        return fromLatitude;
+    }
+
+    // Getter for angle
+    public double getAngle() {
+        return angle;
+    }
+
+    // Getter for toLongitude
+    public double getToLongitude() {
+        return toLongitude;
+    }
+
+    // Getter for toLatitude
+    public double getToLatitude() {
+        return toLatitude;
+    }
 }
