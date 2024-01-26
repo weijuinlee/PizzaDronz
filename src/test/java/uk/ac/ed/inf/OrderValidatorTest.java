@@ -14,6 +14,12 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 
+/**
+ * Unit test for Order validator
+ *
+ *  @author B209981
+ */
+
 public class OrderValidatorTest {
 
     private Order order;

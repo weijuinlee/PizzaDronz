@@ -7,6 +7,8 @@ import uk.ac.ed.inf.ilp.data.NamedRegion;
 
 /**
  * Unit test for LngLatHandler
+ *
+ *  @author B209981
  */
 public class LngLatHandlerTest
 {

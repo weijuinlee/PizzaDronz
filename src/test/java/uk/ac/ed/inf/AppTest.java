@@ -3,6 +3,12 @@ package uk.ac.ed.inf;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
+/**
+ * Unit test for Main App
+ *
+ *  @author B209981
+ */
+
 public class AppTest
 {
     @Test
