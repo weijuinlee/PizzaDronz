@@ -43,7 +43,7 @@ public class OrderValidatorTest {
         order = new Order();
         order.setOrderNo(String.format("%08X", ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE)));
         order.setOrderDate(LocalDate.of(2023, 9, 1));
-        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(1, 12), ThreadLocalRandom.current().nextInt(24, 29)), "22"));
+        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(2, 12), ThreadLocalRandom.current().nextInt(24, 29)), "22"));
         order.setOrderStatus(OrderStatus.UNDEFINED);
         order.setOrderValidationCode(OrderValidationCode.UNDEFINED);
         order.setPizzasInOrder(new Pizza[]{new Pizza("K", 1212), new Pizza("D", 1212), new Pizza("D", 1212), new Pizza("D", 1212)});
@@ -64,7 +64,7 @@ public class OrderValidatorTest {
         order = new Order();
         order.setOrderNo(String.format("%08X", ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE)));
         order.setOrderDate(LocalDate.of(2023, 9, 1));
-        order.setCreditCardInformation(new CreditCardInformation("516767922379583", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(1, 12), ThreadLocalRandom.current().nextInt(24, 29)), "222"));
+        order.setCreditCardInformation(new CreditCardInformation("516767922379583", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(2, 12), ThreadLocalRandom.current().nextInt(24, 29)), "222"));
         order.setOrderStatus(OrderStatus.UNDEFINED);
         order.setOrderValidationCode(OrderValidationCode.UNDEFINED);
         order.setPizzasInOrder(new Pizza[]{new Pizza("K", 1212), new Pizza("D", 1212), new Pizza("D", 1212), new Pizza("D", 1212)});
@@ -174,7 +174,7 @@ public class OrderValidatorTest {
         order = new Order();
         order.setOrderNo(String.format("%08X", ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE)));
         order.setOrderDate(LocalDate.of(2023, 9, 1));
-        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(1, 12) , ThreadLocalRandom.current().nextInt(24, 29)), "222"));
+        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(2, 12) , ThreadLocalRandom.current().nextInt(24, 29)), "222"));
         order.setOrderStatus(OrderStatus.UNDEFINED);
         order.setOrderValidationCode(OrderValidationCode.UNDEFINED);
         order.setPizzasInOrder(new Pizza[]{new Pizza("K", 1212), new Pizza("D", 1212) , new Pizza("D", 1212), new Pizza("D", 1212), new Pizza("D", 1212)});
@@ -195,7 +195,7 @@ public class OrderValidatorTest {
         order = new Order();
         order.setOrderNo(String.format("%08X", ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE)));
         order.setOrderDate(LocalDate.of(2023, 9, 1));
-        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(1, 12) , ThreadLocalRandom.current().nextInt(24, 29)), "222"));
+        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(2, 12) , ThreadLocalRandom.current().nextInt(24, 29)), "222"));
         order.setOrderStatus(OrderStatus.UNDEFINED);
         order.setOrderValidationCode(OrderValidationCode.UNDEFINED);
         order.setPizzasInOrder(new Pizza[]{new Pizza("NotPizza", 1212) , new Pizza("D", 1212), new Pizza("D", 1212), new Pizza("D", 1212)});
@@ -216,7 +216,7 @@ public class OrderValidatorTest {
         order = new Order();
         order.setOrderNo(String.format("%08X", ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE)));
         order.setOrderDate(LocalDate.of(2023, 9, 1));
-        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(1, 12) , ThreadLocalRandom.current().nextInt(24, 29)), "222"));
+        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(2, 12) , ThreadLocalRandom.current().nextInt(24, 29)), "222"));
         order.setOrderStatus(OrderStatus.UNDEFINED);
         order.setOrderValidationCode(OrderValidationCode.UNDEFINED);
         order.setPizzasInOrder(new Pizza[]{new Pizza("K", 1212) , new Pizza("D", 1212), new Pizza("D", 1212), new Pizza("D", 1212)});
@@ -237,7 +237,7 @@ public class OrderValidatorTest {
         order = new Order();
         order.setOrderNo(String.format("%08X", ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE)));
         order.setOrderDate(LocalDate.of(2023, 9, 1));
-        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(1, 12) , ThreadLocalRandom.current().nextInt(24, 29)), "222"));
+        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(2, 12) , ThreadLocalRandom.current().nextInt(24, 29)), "222"));
         order.setOrderStatus(OrderStatus.UNDEFINED);
         order.setOrderValidationCode(OrderValidationCode.UNDEFINED);
         order.setPizzasInOrder(new Pizza[]{new Pizza("A", 1212) , new Pizza("D", 1212), new Pizza("D", 1212), new Pizza("D", 1212)});
@@ -258,7 +258,7 @@ public class OrderValidatorTest {
         order = new Order();
         order.setOrderNo(String.format("%08X", ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE)));
         order.setOrderDate(LocalDate.of(2023, 9, 1));
-        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(1, 12) , ThreadLocalRandom.current().nextInt(24, 29)), "222"));
+        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(2, 12) , ThreadLocalRandom.current().nextInt(24, 29)), "222"));
         order.setOrderStatus(OrderStatus.UNDEFINED);
         order.setOrderValidationCode(OrderValidationCode.UNDEFINED);
         order.setPizzasInOrder(new Pizza[]{new Pizza("T", 1212)});
@@ -278,7 +278,7 @@ public class OrderValidatorTest {
         order = new Order();
         order.setOrderNo(String.format("%08X", ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE)));
         order.setOrderDate(LocalDate.of(2023, 9, 1));
-        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(1, 12) , ThreadLocalRandom.current().nextInt(24, 29)), "222"));
+        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(2, 12) , ThreadLocalRandom.current().nextInt(24, 29)), "222"));
         order.setOrderStatus(OrderStatus.UNDEFINED);
         order.setOrderValidationCode(OrderValidationCode.UNDEFINED);
         order.setPizzasInOrder(new Pizza[]{new Pizza("K", 1212)});
