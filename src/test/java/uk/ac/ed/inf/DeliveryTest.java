@@ -27,6 +27,7 @@ public class DeliveryTest {
 
     @Test
     public void testWriteToFile() throws IOException {
+
         // Prepare test data
         List<Order> orders = new ArrayList<>();
         Order order1 = new Order();
@@ -36,7 +37,6 @@ public class DeliveryTest {
         order1.setPriceTotalInPence(1000);
         orders.add(order1);
 
-        // Add more orders if necessary
         String date = "2023-11-11";
 
         // Call the method
