@@ -68,7 +68,7 @@ public class PathFinding {
      * @param toNode   The destination node.
      * @return The calculated angle in degrees.
      */
-    private static double calculateAngle(Node fromNode, Node toNode) {
+    static double calculateAngle(Node fromNode, Node toNode) {
         // Convert latitude and longitude from degrees to radians.
         double lat1 = Math.toRadians(fromNode.coordinates.lat());
         double lon1 = Math.toRadians(fromNode.coordinates.lng());
