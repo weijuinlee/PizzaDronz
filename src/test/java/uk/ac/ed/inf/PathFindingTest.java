@@ -10,6 +10,12 @@ import uk.ac.ed.inf.ilp.data.Order;
 import uk.ac.ed.inf.ilp.data.LngLat;
 import org.junit.Test;
 
+/**
+ * Unit test for path finding
+ *
+ *  @author B209981
+ */
+
 public class PathFindingTest {
 
     @Test

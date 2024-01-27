@@ -15,6 +15,12 @@ import org.junit.Before;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Unit test for delivery
+ *
+ *  @author B209981
+ */
+
 public class DeliveryTest {
 
     private static final Path RESULT_FILES_DIRECTORY = Path.of("resultfiles");
