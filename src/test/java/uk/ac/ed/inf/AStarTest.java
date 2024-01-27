@@ -6,6 +6,12 @@ import org.junit.Test;
 import uk.ac.ed.inf.ilp.data.LngLat;
 import uk.ac.ed.inf.ilp.data.NamedRegion;
 
+/**
+ * Unit test for A star
+ *
+ *  @author B209981
+ */
+
 public class AStarTest {
 
     private NamedRegion[] noFlyZones;
