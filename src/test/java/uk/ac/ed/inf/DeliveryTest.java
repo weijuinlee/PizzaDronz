@@ -9,11 +9,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import static org.junit.Assert.fail;
+import org.junit.Before;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DeliveryTest {
+
+    private static final Path RESULT_FILES_DIRECTORY = Path.of("resultfiles");
+
+    @Before
+    public void setUp() throws IOException {
+        // Create the resultfiles directory if it doesn't exist
+        Files.createDirectories(RESULT_FILES_DIRECTORY);
+    }
 
     @Test
     public void testWriteToFile() throws IOException {
@@ -46,6 +56,9 @@ public class DeliveryTest {
         assertEquals(1, jsonContent.chars().filter(ch -> ch == '{').count()); // One JSON object for one order
 
         // Clean up: delete the created file
-        Files.deleteIfExists(filePath);
-    }
+        try {
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            fail("Failed to delete file: " + e.getMessage());
+        }    }
 }
