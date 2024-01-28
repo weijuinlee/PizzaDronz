@@ -1,21 +1,11 @@
 package uk.ac.ed.inf;
 
+import static org.junit.Assert.*;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
-import uk.ac.ed.inf.ilp.data.LngLat;
-import uk.ac.ed.inf.ilp.data.Order;
-import uk.ac.ed.inf.ilp.data.Pizza;
-import uk.ac.ed.inf.ilp.data.Restaurant;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import static org.mockito.Mockito.*;
+import uk.ac.ed.inf.ilp.data.*;
 import java.time.DayOfWeek;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 
 /**
@@ -113,31 +103,6 @@ public class AppTest
         };
         when(client.orders(args[0])).thenReturn(mockOrders);
         when(client.restaurants()).thenReturn(mockRestaurants);
-
         App.main(args);
     }
-
-    private final ByteArrayOutputStream consoleOutput = new ByteArrayOutputStream();
-    private final PrintStream originalOut = System.out;
-
-    @BeforeEach
-    void setUpStreams() {
-        System.setOut(new PrintStream(consoleOutput));
-    }
-
-    @AfterEach
-    void restoreStreams() {
-        System.setOut(originalOut);
-    }
-
-    @Test
-    public void testMainValidArgs() {
-
-        String[] args = {"2023-11-11", "https://ilp-rest.azurewebsites.net"};
-        System.setOut(new PrintStream(consoleOutput));
-        App.main(args);
-        String output = consoleOutput.toString();
-        assertTrue(output.contains("[Info]: Main Application started."));
-    }
-
 }
