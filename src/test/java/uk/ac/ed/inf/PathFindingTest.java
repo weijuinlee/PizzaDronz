@@ -61,6 +61,7 @@ public class PathFindingTest {
 
     @Test
     public void testFilterOrdersWithoutValidPaths() {
+
         // Prepare test data
         List<Order> orders = new ArrayList<>();
         List<List<Node>> paths = new ArrayList<>();
