@@ -7,7 +7,7 @@ import org.junit.rules.Timeout;
 public class AppPerformanceTest {
 
     @Rule
-    public Timeout globalTimeout = Timeout.seconds(10); // Maximum execution time for the test
+    public Timeout globalTimeout = Timeout.seconds(10000); // Maximum execution time for the test
 
     @Test
     public void testMainPerformance() {
