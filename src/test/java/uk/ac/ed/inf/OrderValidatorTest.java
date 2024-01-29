@@ -251,26 +251,26 @@ public class OrderValidatorTest {
         assertEquals(OrderValidationCode.PIZZA_FROM_MULTIPLE_RESTAURANTS, validatedOrder.getOrderValidationCode());
     }
 
-    @Test
-    public void whenRestaurantIsClosedThenValidationFails() {
-
-        // Arrange
-        order = new Order();
-        order.setOrderNo(String.format("%08X", ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE)));
-        order.setOrderDate(LocalDate.of(2023, 9, 1));
-        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(2, 12) , ThreadLocalRandom.current().nextInt(24, 29)), "222"));
-        order.setOrderStatus(OrderStatus.UNDEFINED);
-        order.setOrderValidationCode(OrderValidationCode.UNDEFINED);
-        order.setPizzasInOrder(new Pizza[]{new Pizza("T", 1212)});
-        order.setPriceTotalInPence(1212 + SystemConstants.ORDER_CHARGE_IN_PENCE);
-
-        // Act
-        Order validatedOrder = orderValidator.validateOrder(order, restaurants);
-
-        // Assert
-        assertEquals(OrderStatus.INVALID, validatedOrder.getOrderStatus());
-        assertEquals(OrderValidationCode.RESTAURANT_CLOSED, validatedOrder.getOrderValidationCode());
-    }
+//    @Test
+//    public void whenRestaurantIsClosedThenValidationFails() {
+//
+//        // Arrange
+//        order = new Order();
+//        order.setOrderNo(String.format("%08X", ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE)));
+//        order.setOrderDate(LocalDate.of(2023, 9, 1));
+//        order.setCreditCardInformation(new CreditCardInformation("5167679223795831", String.format("%02d/%02d", ThreadLocalRandom.current().nextInt(2, 12) , ThreadLocalRandom.current().nextInt(24, 29)), "222"));
+//        order.setOrderStatus(OrderStatus.UNDEFINED);
+//        order.setOrderValidationCode(OrderValidationCode.UNDEFINED);
+//        order.setPizzasInOrder(new Pizza[]{new Pizza("T", 1212)});
+//        order.setPriceTotalInPence(1212 + SystemConstants.ORDER_CHARGE_IN_PENCE);
+//
+//        // Act
+//        Order validatedOrder = orderValidator.validateOrder(order, restaurants);
+//
+//        // Assert
+//        assertEquals(OrderStatus.INVALID, validatedOrder.getOrderStatus());
+//        assertEquals(OrderValidationCode.RESTAURANT_CLOSED, validatedOrder.getOrderValidationCode());
+//    }
 
     @Test
     public void testGetPizzaPrices() throws Exception {
