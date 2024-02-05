@@ -24,4 +24,4 @@ Executing the command as detailed above will generate three files:
   
 - flightpath-2023-11-11.json: This file contains a JSON array that describes each move of the drone on the specified date.
   
-- drone-2023-01-25.geojson: This file provides a GeoJSON visualization of the drone's flight path, which can be rendered on platforms like geojson.io.
+- drone-2023-11-11.geojson: This file provides a GeoJSON visualization of the drone's flight path, which can be rendered on platforms like geojson.io.
